@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">MSaver</string>
+    <string name="title_stat">Statistics</string>
+    <string name="title_income">Income</string>
+    <string name="title_expenses">Expenses</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="menu_settings">Settings</string>
+
+</resources>
