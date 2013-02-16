@@ -114,7 +114,7 @@ public class MainActivity extends FragmentActivity implements
 			// getItem is called to instantiate the fragment for the given page.
 			// Return a DummySectionFragment (defined as a static inner class
 			// below) with the page number as its lone argument.
-			Fragment fragment = new DummySectionFragment();
+			Fragment fragment = new DummySectionFragment(R.layout.expenses);
 			Bundle args = new Bundle();
 			args.putInt(DummySectionFragment.ARG_SECTION_NUMBER, position + 1);
 			fragment.setArguments(args);
@@ -151,20 +151,16 @@ public class MainActivity extends FragmentActivity implements
 		 * fragment.
 		 */
 		public static final String ARG_SECTION_NUMBER = "section_number";
+		private final int layoutId;
 
-		public DummySectionFragment() {
+		public DummySectionFragment(int layoutId) {
+			this.layoutId = layoutId;
 		}
 
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
-			// Create a new TextView and set its text to the fragment's section
-			// number argument value.
-			TextView textView = new TextView(getActivity());
-			textView.setGravity(Gravity.CENTER);
-			textView.setText(Integer.toString(getArguments().getInt(
-					ARG_SECTION_NUMBER)));
-			return textView;
+			return inflater.inflate(layoutId, container, false);
 		}
 	}
 
