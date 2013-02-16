@@ -5,22 +5,4 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity" >
 
-<!--     <fragment
-        android:id="@+id/frag_expenses"
-        android:name="com.example.msaver.MainActivity$DummySectionFragment"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
-    <fragment
-        android:id="@+id/frag_income"
-        android:name="com.example.msaver.MainActivity$DummySectionFragment"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
-    <fragment
-        android:id="@+id/frag_stats"
-        android:name="com.example.msaver.MainActivity$DummySectionFragment"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
- -->
 </android.support.v4.view.ViewPager>
