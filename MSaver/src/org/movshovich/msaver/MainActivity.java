@@ -1,4 +1,6 @@
-package com.example.msaver;
+package org.movshovich.msaver;
+
+import com.example.msaver.R;
 
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
@@ -8,12 +10,10 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 public class MainActivity extends FragmentActivity implements
 		ActionBar.TabListener {

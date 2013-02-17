@@ -6,52 +6,130 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="0.09" >
+        android:layout_height="wrap_content" 
+        android:layout_marginTop="20dp">
+        <TextView
+            android:id="@+id/textView1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:text="@string/expence_date" />
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/date"
+            android:layout_marginLeft="20dp"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    </LinearLayout>
+
+    
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
 
         <EditText
             android:id="@+id/editText1"
-            android:layout_width="wrap_content"
+            android:layout_width="276dp"
             android:layout_height="wrap_content"
-            android:layout_weight="0.81"
-            android:ems="10" />
-
-        <EditText
-            android:id="@+id/editText3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.81"
-            android:ems="10" >
+            android:layout_marginBottom="20dp"
+            android:layout_marginTop="20dp"
+            android:ems="10"
+            android:hint="@string/product" >
 
             <requestFocus />
         </EditText>
+
+        <EditText
+            android:id="@+id/editText3"
+            android:layout_width="64dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:layout_marginTop="20dp"
+            android:layout_weight="1"
+            android:ems="10"
+            android:hint="@string/price"
+            android:inputType="phone" />
+
+      </LinearLayout>
 
         <Button
             android:id="@+id/button1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Add" />
+            android:layout_gravity="center"
+            android:text="@string/add" />
 
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="0.81" >
-
-        <EditText
-            android:id="@+id/editText2"
+        <TextView
+            android:id="@+id/textView3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="0.81"
-            android:ems="10" />
+            android:layout_marginLeft="20dp"
+            android:text="@string/last_buys" />
 
-        <Button
-            android:id="@+id/button2"
-            android:layout_width="93dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.81"
-            android:text="Button" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" >
 
-    </LinearLayout>
+            <TableLayout
+                android:id="@+id/last_buys"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_above="@+id/balance_layout" >
+
+                <TableRow
+                    android:id="@+id/tableRow1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+                </TableRow>
+
+                <TableRow
+                    android:id="@+id/tableRow2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+                </TableRow>
+
+                <TableRow
+                    android:id="@+id/tableRow3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+                </TableRow>
+
+                <TableRow
+                    android:id="@+id/tableRow4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+                </TableRow>
+            </TableLayout>
+
+            <LinearLayout
+                android:id="@id/balance_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="20dp"
+                android:layout_alignParentEnd="false" >
+
+                <TextView
+                    android:id="@+id/textView4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                    android:text="@string/balance"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+                <TextView
+                    android:id="@+id/textView5"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                   
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+            </LinearLayout>
+
+        </RelativeLayout>
+    
+       
 </LinearLayout>
