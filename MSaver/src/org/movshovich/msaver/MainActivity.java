@@ -1,6 +1,6 @@
 package org.movshovich.msaver;
 
-import com.example.msaver.R;
+import org.movshovich.msaver.R;
 
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 public class MainActivity extends FragmentActivity implements
 		ActionBar.TabListener {
@@ -72,6 +73,7 @@ public class MainActivity extends FragmentActivity implements
 					.setText(mSectionsPagerAdapter.getPageTitle(i))
 					.setTabListener(this));
 		}
+
 	}
 
 	@Override
@@ -112,24 +114,15 @@ public class MainActivity extends FragmentActivity implements
 		@Override
 		public Fragment getItem(int position) {
 			// getItem is called to instantiate the fragment for the given page.
-			// Return a DummySectionFragment (defined as a static inner class
-			// below) with the page number as its lone argument.
-			Fragment fragment = new DummySectionFragment();
-			Bundle args = new Bundle();
-			args.putInt(DummySectionFragment.ARG_SECTION_NUMBER, position + 1);
 			switch (position) {
 			case 0:
-				args.putInt(DummySectionFragment.ARG_LAYOUT_ID, R.layout.expenses);
-				break;
+				return new ExpensesFragment();
 			case 1:
-				args.putInt(DummySectionFragment.ARG_LAYOUT_ID, R.layout.income);
-				break;
+				return new IncomeFragment();
 			case 2:
-				args.putInt(DummySectionFragment.ARG_LAYOUT_ID, R.layout.stats);
-				break;
+				return new StatsFragment();
 			}
-			fragment.setArguments(args);
-			return fragment;
+			return null;
 		}
 
 		@Override
@@ -149,28 +142,6 @@ public class MainActivity extends FragmentActivity implements
 				return getString(R.string.title_stat).toUpperCase();
 			}
 			return null;
-		}
-	}
-
-	/**
-	 * A dummy fragment representing a section of the app, but that simply
-	 * displays dummy text.
-	 */
-	public static class DummySectionFragment extends Fragment {
-		/**
-		 * The fragment argument representing the section number for this
-		 * fragment.
-		 */
-		public static final String ARG_SECTION_NUMBER = "section_number";
-		public static final String ARG_LAYOUT_ID = "layout_id";
-
-		public DummySectionFragment() {
-		}
-
-		@Override
-		public View onCreateView(LayoutInflater inflater, ViewGroup container,
-				Bundle savedInstanceState) {
-			return inflater.inflate(getArguments().getInt(ARG_LAYOUT_ID), container, false);
 		}
 	}
 

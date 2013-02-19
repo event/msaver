@@ -16,7 +16,7 @@
             android:text="@string/expence_date" />
 
         <TextView
-            android:id="@+id/textView2"
+            android:id="@+id/expenseDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/date"
@@ -31,7 +31,7 @@
         android:layout_height="wrap_content" >
 
         <EditText
-            android:id="@+id/editText1"
+            android:id="@+id/expenseProductEnter"
             android:layout_width="276dp"
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
@@ -43,7 +43,7 @@
         </EditText>
 
         <EditText
-            android:id="@+id/editText3"
+            android:id="@+id/expensePriceEnter"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
@@ -56,7 +56,7 @@
       </LinearLayout>
 
         <Button
-            android:id="@+id/button1"
+            android:id="@+id/expenseAdd"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
@@ -121,7 +121,7 @@
                     android:textAppearance="?android:attr/textAppearanceLarge" />
 
                 <TextView
-                    android:id="@+id/textView5"
+                    android:id="@+id/expenseBalance"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="20dp"
