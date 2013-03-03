@@ -2,6 +2,8 @@ package org.movshovich.msaver;
 
 import org.movshovich.msaver.R;
 
+import com.j256.ormlite.android.apptools.OpenHelperManager;
+
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
@@ -29,6 +31,8 @@ public class MainActivity extends FragmentActivity implements
 	 */
 	SectionsPagerAdapter mSectionsPagerAdapter;
 
+	
+	public static DatabaseHelper databaseHelper;
 	/**
 	 * The {@link ViewPager} that will host the section contents.
 	 */
@@ -73,7 +77,14 @@ public class MainActivity extends FragmentActivity implements
 					.setText(mSectionsPagerAdapter.getPageTitle(i))
 					.setTabListener(this));
 		}
+		databaseHelper = OpenHelperManager.getHelper(this, DatabaseHelper.class);
+	}
 
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		databaseHelper = null;
+		OpenHelperManager.releaseHelper();
 	}
 
 	@Override
