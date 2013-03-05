@@ -64,23 +64,27 @@ public class ExpensesFragment extends Fragment {
 		Date currentDate = new Date();
 		e.setDate(currentDate);
 		e.setProduct(p);
-		if (coinPrice.contains(".")){
-			coinPrice = coinPrice.replaceAll("\\.", "");
-		}
-		if (isNumeric(coinPrice)) { 
-			pricetext.setBackgroundColor(Color.TRANSPARENT);//propodaet polosa pod textom
-			if (Integer.parseInt(coinPrice) >= 1){ //nado proverjat  1 ili 0.01 t.k. int  opredeljaet i to i drugoe  kak 1
-				e.setPrice (-Integer.parseInt(coinPrice)*100); 
-			}else{
-				e.setPrice (-Integer.parseInt(coinPrice)); //s  0.3 ne  rabotaet
-			}
+		if (isNumeric(coinPrice)) {
 			
+			int position = coinPrice.indexOf(".");
+			int length = coinPrice.length();
+			int factor = 1;
+			if (position == -1 ){
+				factor = 100;
+			}else if (length - position == 2){
+				factor = 10;
+			}else if (length - position == 3){
+				factor = 1;
+			} 
+			coinPrice = coinPrice.replaceAll("\\.", ""); 
+			e.setPrice (-Integer.parseInt(coinPrice) * factor); 					
+
+			pricetext.setTextColor(Color.BLACK);
 		}else{
-			//TODO: indicate error
-			pricetext.setBackgroundColor(Color.RED);
+			pricetext.setTextColor(Color.RED);
 			return;
 		}	
-		
+
 		
 		try {
 			MainActivity.databaseHelper.getProductDao().create(p);
