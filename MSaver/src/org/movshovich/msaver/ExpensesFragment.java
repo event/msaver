@@ -7,8 +7,10 @@ import com.j256.ormlite.android.apptools.OpenHelperManager;
 import com.j256.ormlite.dao.GenericRawResults;
 import com.j256.ormlite.stmt.QueryBuilder;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +26,8 @@ public class ExpensesFragment extends Fragment {
 		View view = inflater.inflate(R.layout.expenses, container, false);
 		addListeners(view);
 		updateBalance(view);
+		//TODO: show and update list of last N expenses
+		//TODO: make balance field wider (add some padding)
 		return view;
 	}
 
@@ -37,20 +41,46 @@ public class ExpensesFragment extends Fragment {
 				}
 			});
 		}
-
+		//TODO: show hint list when typing in product name 
 	}
 	
 	private void onAddClick(View view) {
-		Product p = new Product();
+		// TODO: integer numbers must be multiplied by 100
+		// TODO: reuse old products - don't create new products on every save
+		// TODO: when adding new product it should ask for some properties (i.e. category, shmategorey, etc.)
 		EditText producttext = (EditText) view.findViewById(R.id.expenseProductEnter);
+		EditText pricetext = (EditText) view.findViewById(R.id.expensePriceEnter);
+			
+		String coinPrice = pricetext.getText().toString();
+		String price = coinPrice;
+		//Log.w("MSaver", price);
+		if (producttext.getText().length() == 0  || price.isEmpty()){
+			return;
+		}
+		Product p = new Product();
 		p.setName(producttext.getText().toString());
 		
 		Expense e = new Expense();
 		Date currentDate = new Date();
 		e.setDate(currentDate);
 		e.setProduct(p);
-		EditText pricetext = (EditText) view.findViewById(R.id.expensePriceEnter);
-		e.setPrice (Integer.parseInt(pricetext.getText().toString())); //TODO: support numbers with decimal parts 
+		if (coinPrice.contains(".")){
+			coinPrice = coinPrice.replaceAll("\\.", "");
+		}
+		if (isNumeric(coinPrice)) { 
+			pricetext.setBackgroundColor(Color.TRANSPARENT);//propodaet polosa pod textom
+			if (Integer.parseInt(coinPrice) >= 1){ //nado proverjat  1 ili 0.01 t.k. int  opredeljaet i to i drugoe  kak 1
+				e.setPrice (-Integer.parseInt(coinPrice)*100); 
+			}else{
+				e.setPrice (-Integer.parseInt(coinPrice)); //s  0.3 ne  rabotaet
+			}
+			
+		}else{
+			//TODO: indicate error
+			pricetext.setBackgroundColor(Color.RED);
+			return;
+		}	
+		
 		
 		try {
 			MainActivity.databaseHelper.getProductDao().create(p);
@@ -63,9 +93,12 @@ public class ExpensesFragment extends Fragment {
 		pricetext.getText().clear();
 		
 		updateBalance(view);
-
 	}
-
+	
+	private boolean isNumeric(String str) {
+	  return str.matches("\\d*\\.?\\d{1,2}"); 
+	}
+	
 	private void updateBalance(View view) {
 		String sum = "0";
 		try {
@@ -75,8 +108,19 @@ public class ExpensesFragment extends Fragment {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		Log.w("MSaver", "Sum is '" + sum + "'");
 		TextView sumview = (TextView) view.findViewById(R.id.expenseBalance);
+		Integer lengthSum = sum.length();
+		String preSum = sum.substring(0, lengthSum-2); 
+		String postSum = sum.substring(lengthSum - 2);
+		sum = preSum + "." + postSum;
 		sumview.setText(sum);
+		if (Float.parseFloat(sum) < 0 ){
+			sumview.setBackgroundColor(Color.RED);
+		} else {
+			sumview.setBackgroundColor(Color.GREEN);
+		}
+			
 	}
-
+	
 }
