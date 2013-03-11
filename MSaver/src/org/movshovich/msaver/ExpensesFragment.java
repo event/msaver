@@ -1,7 +1,10 @@
 package org.movshovich.msaver;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
 import com.j256.ormlite.android.apptools.OpenHelperManager;
 import com.j256.ormlite.dao.GenericRawResults;
@@ -10,12 +13,16 @@ import com.j256.ormlite.stmt.QueryBuilder;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 
 public class ExpensesFragment extends Fragment {
@@ -26,13 +33,42 @@ public class ExpensesFragment extends Fragment {
 		View view = inflater.inflate(R.layout.expenses, container, false);
 		addListeners(view);
 		updateBalance(view);
+		showList(view);
 		//TODO: show and update list of last N expenses
 		//TODO: make balance field wider (add some padding)
 		return view;
 	}
 
+	private void showList(View view) {
+		QueryBuilder<Expense, Integer> qb = MainActivity.databaseHelper.getExpenseDao().queryBuilder();
+		List<Expense> expenses;
+		try {
+			expenses = qb.orderBy("date", false).limit(5L).query();
+			for (Expense e : expenses) {
+				MainActivity.databaseHelper.getProductDao().refresh(e.getProduct());
+			}
+		} catch (SQLException e1) {
+			Log.w("MSaver", e1);
+			return;
+		}
+		TableLayout tl = (TableLayout) view.findViewById(R.id.last_buys);
+		
+		int stringIndex = e.getPrice();
+		
+		int rowIdx = 0;
+		for (Expense e : expenses) {
+			TableRow row = (TableRow) tl.getChildAt(rowIdx);
+			TextView productText = (TextView) row.getChildAt(0);
+			TextView priceText = (TextView) row.getChildAt(1);
+			productText.setText(e.getProduct().getName());
+			
+			priceText.setText(Integer.toString(e.getPrice()));
+			rowIdx += 1;
+		}
+	}
+
 	private void addListeners(final View view) {
-		final Button addButton = (Button)  view.findViewById(R.id.expenseAdd);
+		Button addButton = (Button)  view.findViewById(R.id.expenseAdd);
 		if (addButton != null) {
 			addButton.setOnClickListener(new View.OnClickListener() {
 				@Override
@@ -41,11 +77,27 @@ public class ExpensesFragment extends Fragment {
 				}
 			});
 		}
+		final EditText price = (EditText) view.findViewById(R.id.expensePriceEnter);
+		price.addTextChangedListener(new TextWatcher() {
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before, int count) {
+				price.setTextColor(Color.BLACK);
+			}
+			
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count,
+					int after) {
+			}
+			
+			@Override
+			public void afterTextChanged(Editable s) {
+			}
+		});
 		//TODO: show hint list when typing in product name 
 	}
+
 	
 	private void onAddClick(View view) {
-		// TODO: integer numbers must be multiplied by 100
 		// TODO: reuse old products - don't create new products on every save
 		// TODO: when adding new product it should ask for some properties (i.e. category, shmategorey, etc.)
 		EditText producttext = (EditText) view.findViewById(R.id.expenseProductEnter);
@@ -53,7 +105,6 @@ public class ExpensesFragment extends Fragment {
 			
 		String coinPrice = pricetext.getText().toString();
 		String price = coinPrice;
-		//Log.w("MSaver", price);
 		if (producttext.getText().length() == 0  || price.isEmpty()){
 			return;
 		}
@@ -79,12 +130,10 @@ public class ExpensesFragment extends Fragment {
 			coinPrice = coinPrice.replaceAll("\\.", ""); 
 			e.setPrice (-Integer.parseInt(coinPrice) * factor); 					
 
-			pricetext.setTextColor(Color.BLACK);
 		}else{
 			pricetext.setTextColor(Color.RED);
 			return;
 		}	
-
 		
 		try {
 			MainActivity.databaseHelper.getProductDao().create(p);
@@ -93,10 +142,11 @@ public class ExpensesFragment extends Fragment {
 			// TODO: process exception DB
 			e1.printStackTrace();
 		}
+		
+		updateBalance(view);
 		producttext.getText().clear();
 		pricetext.getText().clear();
 		
-		updateBalance(view);
 	}
 	
 	private boolean isNumeric(String str) {
