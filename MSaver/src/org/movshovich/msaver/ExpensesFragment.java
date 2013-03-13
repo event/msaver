@@ -34,8 +34,7 @@ public class ExpensesFragment extends Fragment {
 		addListeners(view);
 		updateBalance(view);
 		showList(view);
-		//TODO: show and update list of last N expenses
-		//TODO: make balance field wider (add some padding)
+		//TODO: make limit length for 1st column (chto by vlezli cifry)
 		return view;
 	}
 
@@ -52,17 +51,16 @@ public class ExpensesFragment extends Fragment {
 			return;
 		}
 		TableLayout tl = (TableLayout) view.findViewById(R.id.last_buys);
-		
-		int stringIndex = e.getPrice();
-		
+
+		String sum;
 		int rowIdx = 0;
 		for (Expense e : expenses) {
 			TableRow row = (TableRow) tl.getChildAt(rowIdx);
 			TextView productText = (TextView) row.getChildAt(0);
 			TextView priceText = (TextView) row.getChildAt(1);
 			productText.setText(e.getProduct().getName());
-			
-			priceText.setText(Integer.toString(e.getPrice()));
+			sum = addingDotToString(Integer.toString(e.getPrice()));
+			priceText.setText(sum);
 			rowIdx += 1;
 		}
 	}
@@ -144,6 +142,7 @@ public class ExpensesFragment extends Fragment {
 		}
 		
 		updateBalance(view);
+		showList(view);
 		producttext.getText().clear();
 		pricetext.getText().clear();
 		
@@ -164,17 +163,35 @@ public class ExpensesFragment extends Fragment {
 		}
 		Log.w("MSaver", "Sum is '" + sum + "'");
 		TextView sumview = (TextView) view.findViewById(R.id.expenseBalance);
-		Integer lengthSum = sum.length();
-		String preSum = sum.substring(0, lengthSum-2); 
-		String postSum = sum.substring(lengthSum - 2);
-		sum = preSum + "." + postSum;
+		sum = addingDotToString(sum);
 		sumview.setText(sum);
-		if (Float.parseFloat(sum) < 0 ){
+		if ( sum.charAt(0) == '-' ){
 			sumview.setBackgroundColor(Color.RED);
 		} else {
 			sumview.setBackgroundColor(Color.GREEN);
 		}
 			
+	}
+
+	public String addingDotToString(String num) {
+		if (num == "0" || num.isEmpty()) {
+			return num;
+		}
+		boolean neg = num.charAt(0) == '-';
+		String prepend = "";
+		if (neg) {
+			num = num.substring(1);
+			prepend = "-";
+		}
+		int lenNum = num.length();
+		if (lenNum == 1) {
+			return new StringBuilder().append(prepend).append("0.0").append(num).toString();
+		} else if (lenNum == 2) {
+			return new StringBuilder().append(prepend).append("0.").append(num).toString();
+		} else {
+			return new StringBuilder().append(prepend).append(num.substring(0, lenNum-2))
+						.append('.').append(num.substring(lenNum - 2)).toString();
+		}
 	}
 	
 }
