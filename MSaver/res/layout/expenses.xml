@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -20,6 +21,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/date"
+            android:textColor="#0066ff"
             android:layout_marginLeft="20dp"
             android:textAppearance="?android:attr/textAppearanceLarge" />
 
@@ -30,7 +32,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
 
-        <EditText
+        <AutoCompleteTextView
             android:id="@+id/expenseProductEnter"
             android:layout_width="276dp"
             android:layout_height="wrap_content"
@@ -40,7 +42,7 @@
             android:hint="@string/product" >
 
             <requestFocus />
-        </EditText>
+        </AutoCompleteTextView>
 
         <EditText
             android:id="@+id/expensePriceEnter"
@@ -75,8 +77,9 @@
 
             <TableLayout
                 android:id="@+id/last_buys"
-                android:layout_width="match_parent"
+                android:layout_width="fill_parent"
                 android:layout_height="match_parent"
+                android:weightSum="1.0"
                 android:layout_above="@+id/balance_layout" >
 
                 <TableRow
@@ -86,15 +89,19 @@
 
                 <TextView
                     android:id="@+id/expenseTableProductTextRow1"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_weight=".65"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="20dp"
+                    android:maxLength="14"
+                    android:ellipsize="end"
                     android:textAppearance="?android:attr/textAppearanceLarge"
                     android:textIsSelectable="true" />
 
                 <TextView
             android:id="@+id/expenseTablePriceTextRow1"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight=".35"
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp" 
            
@@ -108,14 +115,16 @@
 
                  <TextView
                      android:id="@+id/expenseTablePriceTextRow2"
-                     android:layout_width="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_weight=".65"
                      android:layout_height="wrap_content"
                      android:layout_marginLeft="20dp"
                      android:textAppearance="?android:attr/textAppearanceLarge" />
 
                 <TextView
             android:id="@+id/expenseTableSumTextRow2"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight=".35"
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp" 
             android:textAppearance="?android:attr/textAppearanceLarge"/>
@@ -128,14 +137,16 @@
 
                 <TextView
                     android:id="@+id/expenseTablePriceTextRow3"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_weight=".65"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="20dp"
                     android:textAppearance="?android:attr/textAppearanceLarge" />
 
                 <TextView
             android:id="@+id/expenseTableSumTextRow3"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight=".35"
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp" 
             android:textAppearance="?android:attr/textAppearanceLarge"/>
@@ -147,13 +158,15 @@
                     android:layout_height="wrap_content" >
                 <TextView
             android:id="@+id/expenseTablePriceTextRow4"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+                    android:layout_weight=".65"
+                    android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
             android:textAppearance="?android:attr/textAppearanceLarge"/>
                 <TextView
             android:id="@+id/expenseTableSumTextRow4"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight=".35"
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp" 
             android:textAppearance="?android:attr/textAppearanceLarge"/>
@@ -164,13 +177,15 @@
                     android:layout_height="wrap_content" >
                 <TextView
             android:id="@+id/expenseTablePriceTextRow5"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+                    android:layout_weight=".65"
+                    android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
             android:textAppearance="?android:attr/textAppearanceLarge"/>
                 <TextView
             android:id="@+id/expenseTableSumTextRow5"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight=".35"
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp" 
             android:textAppearance="?android:attr/textAppearanceLarge"/>

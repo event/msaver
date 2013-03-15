@@ -1,29 +1,36 @@
 package org.movshovich.msaver;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
-import com.j256.ormlite.android.apptools.OpenHelperManager;
-import com.j256.ormlite.dao.GenericRawResults;
-import com.j256.ormlite.stmt.QueryBuilder;
-
+import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SimpleCursorAdapter;
+import android.support.v4.widget.SimpleCursorAdapter.CursorToStringConverter;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FilterQueryProvider;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+
+import com.j256.ormlite.android.AndroidDatabaseResults;
+import com.j256.ormlite.dao.CloseableIterator;
+import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.dao.GenericRawResults;
+import com.j256.ormlite.stmt.PreparedQuery;
+import com.j256.ormlite.stmt.QueryBuilder;
 
 public class ExpensesFragment extends Fragment {
 
@@ -34,12 +41,16 @@ public class ExpensesFragment extends Fragment {
 		addListeners(view);
 		updateBalance(view);
 		showList(view);
-		//TODO: make limit length for 1st column (chto by vlezli cifry)
+		//TODO: choose  date
+		TextView dateView = (TextView) view.findViewById(R.id.expenseDate);		
+		SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy");		
+		dateView.setText(sdf.format(new Date()));
 		return view;
 	}
 
 	private void showList(View view) {
-		QueryBuilder<Expense, Integer> qb = MainActivity.databaseHelper.getExpenseDao().queryBuilder();
+		QueryBuilder<Expense, Integer> qb = MainActivity.databaseHelper
+				.getExpenseDao().queryBuilder();
 		List<Expense> expenses;
 		try {
 			expenses = qb.orderBy("date", false).limit(5L).query();
@@ -63,6 +74,7 @@ public class ExpensesFragment extends Fragment {
 			priceText.setText(sum);
 			rowIdx += 1;
 		}
+		
 	}
 
 	private void addListeners(final View view) {
@@ -92,9 +104,50 @@ public class ExpensesFragment extends Fragment {
 			}
 		});
 		//TODO: show hint list when typing in product name 
+		AutoCompleteTextView textView = (AutoCompleteTextView) view.findViewById(R.id.expenseProductEnter);
+		SimpleCursorAdapter sca = new SimpleCursorAdapter(view.getContext()
+				, android.R.layout.simple_dropdown_item_1line, null
+				, new String[] {"name"}, new int[] { android.R.id.text1 }, 0);
+		textView.setAdapter(sca);
+		
+		sca.setCursorToStringConverter(new  CursorToStringConverter() {
+            public String convertToString(android.database.Cursor cursor) {
+                // Get the label for this row out of the "state" column
+                final int columnIndex = cursor.getColumnIndexOrThrow("name");
+                final String str = cursor.getString(columnIndex);
+                return str;
+            }
+		});
+		sca.setFilterQueryProvider(new FilterQueryProvider() {
+			public Cursor runQuery(CharSequence constraint) {
+				// Search for states whose names begin with the specified letters
+				// build your query
+				if (constraint == null) {
+					return null;
+				}
+				Dao<Product, Integer> dao = MainActivity.databaseHelper.getProductDao();
+				QueryBuilder<Product, Integer> qb =  dao.queryBuilder();
+				// when you are done, prepare your query and build an iterator
+				CloseableIterator<String[]> iterator = null;
+				try {
+					qb.selectRaw("`id` as `_id`", "`name`");
+					qb.where().like("name", constraint.toString() + "%");
+					String prepareStatementString = qb.prepareStatementString();
+					Log.d("MSaver", qb.prepareStatementString());
+					GenericRawResults<String[]> rawRes = dao.queryRaw(prepareStatementString);
+					iterator = rawRes.closeableIterator();
+				} catch (SQLException e) {
+					Log.w("MSaver", e);
+					return null;
+				}
+				AndroidDatabaseResults results =
+						(AndroidDatabaseResults)iterator.getRawResults();
+				return results.getRawCursor();
+			}
+		});
+
 	}
 
-	
 	private void onAddClick(View view) {
 		// TODO: reuse old products - don't create new products on every save
 		// TODO: when adding new product it should ask for some properties (i.e. category, shmategorey, etc.)
