@@ -15,5 +15,9 @@
     <string name="expence_date">Expense date</string>
     <string name="last_buys">Last buys</string>
     <string name="balance">Balance</string>
+    <string name="income_date">Income date</string>
+    <string name="income">income</string>
+    <string name="last_incomes">Last incomes</string>
+    <string name="amount">amount</string>
 
 </resources>
