@@ -12,7 +12,6 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,14 +28,14 @@ public class MainActivity extends FragmentActivity implements
 	 * intensive, it may be best to switch to a
 	 * {@link android.support.v4.app.FragmentStatePagerAdapter}.
 	 */
-	SectionsPagerAdapter mSectionsPagerAdapter;
+	private SectionsPagerAdapter sectionsPagerAdapter;
 
 	
 	public static DatabaseHelper databaseHelper;
 	/**
 	 * The {@link ViewPager} that will host the section contents.
 	 */
-	ViewPager mViewPager;
+	private ViewPager viewPager;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -49,17 +48,16 @@ public class MainActivity extends FragmentActivity implements
 
 		// Create the adapter that will return a fragment for each of the three
 		// primary sections of the app.
-		mSectionsPagerAdapter = new SectionsPagerAdapter(
-				getSupportFragmentManager());
+		sectionsPagerAdapter = new SectionsPagerAdapter(this);
 
 		// Set up the ViewPager with the sections adapter.
-		mViewPager = (ViewPager) findViewById(R.id.pager);
-		mViewPager.setAdapter(mSectionsPagerAdapter);
+		viewPager = (ViewPager) findViewById(R.id.pager);
+		viewPager.setAdapter(sectionsPagerAdapter);
 
 		// When swiping between different sections, select the corresponding
 		// tab. We can also use ActionBar.Tab#select() to do this if we have
 		// a reference to the Tab.
-		mViewPager
+		viewPager
 				.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
 					@Override
 					public void onPageSelected(int position) {
@@ -68,13 +66,13 @@ public class MainActivity extends FragmentActivity implements
 				});
 
 		// For each of the sections in the app, add a tab to the action bar.
-		for (int i = 0; i < mSectionsPagerAdapter.getCount(); i++) {
+		for (int i = 0; i < sectionsPagerAdapter.getCount(); i++) {
 			// Create a tab with text corresponding to the page title defined by
 			// the adapter. Also specify this Activity object, which implements
 			// the TabListener interface, as the callback (listener) for when
 			// this tab is selected.
 			actionBar.addTab(actionBar.newTab()
-					.setText(mSectionsPagerAdapter.getPageTitle(i))
+					.setText(sectionsPagerAdapter.getPageTitle(i))
 					.setTabListener(this));
 		}
 		databaseHelper = OpenHelperManager.getHelper(this, DatabaseHelper.class);
@@ -97,9 +95,15 @@ public class MainActivity extends FragmentActivity implements
 	@Override
 	public void onTabSelected(ActionBar.Tab tab,
 			FragmentTransaction fragmentTransaction) {
-		// When the given tab is selected, switch to the corresponding page in
-		// the ViewPager.
-		mViewPager.setCurrentItem(tab.getPosition());
+		// When the given tab is selected, switch to the corresponding page in the ViewPager.
+		viewPager.setCurrentItem(tab.getPosition());
+		//update balance
+		if (sectionsPagerAdapter.expensesFragment.getView() != null){
+		sectionsPagerAdapter.expensesFragment.updateBalance(sectionsPagerAdapter.expensesFragment.getView());
+		}
+		if (sectionsPagerAdapter.incomeFragment.getView() != null){
+			sectionsPagerAdapter.incomeFragment.updateBalance(sectionsPagerAdapter.incomeFragment.getView());
+		}
 	}
 
 	@Override
@@ -116,10 +120,16 @@ public class MainActivity extends FragmentActivity implements
 	 * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
 	 * one of the sections/tabs/pages.
 	 */
-	public class SectionsPagerAdapter extends FragmentPagerAdapter {
+	public static class SectionsPagerAdapter extends FragmentPagerAdapter {
 
-		public SectionsPagerAdapter(FragmentManager fm) {
-			super(fm);
+		private ExpensesFragment expensesFragment = new ExpensesFragment();
+		private IncomeFragment incomeFragment = new IncomeFragment();
+		private StatsFragment statsFragment = new StatsFragment();
+		private FragmentActivity fa;
+
+		public SectionsPagerAdapter(FragmentActivity fa) {
+			super(fa.getSupportFragmentManager());
+			this.fa = fa;
 		}
 
 		@Override
@@ -127,11 +137,11 @@ public class MainActivity extends FragmentActivity implements
 			// getItem is called to instantiate the fragment for the given page.
 			switch (position) {
 			case 0:
-				return new ExpensesFragment();
+				return expensesFragment;
 			case 1:
-				return new IncomeFragment();
+				return incomeFragment;
 			case 2:
-				return new StatsFragment();
+				return statsFragment;
 			}
 			return null;
 		}
@@ -146,11 +156,11 @@ public class MainActivity extends FragmentActivity implements
 		public CharSequence getPageTitle(int position) {
 			switch (position) {
 			case 0:
-				return getString(R.string.title_expenses).toUpperCase();
+				return fa.getString(R.string.title_expenses).toUpperCase();
 			case 1:
-				return getString(R.string.title_income).toUpperCase();
+				return fa.getString(R.string.title_income).toUpperCase();
 			case 2:
-				return getString(R.string.title_stat).toUpperCase();
+				return fa.getString(R.string.title_stat).toUpperCase();
 			}
 			return null;
 		}

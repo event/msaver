@@ -21,6 +21,8 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
 	private Dao<Product, Integer> productDao;
 
+	private Dao<Category, Integer> categoryDao;
+
 	public DatabaseHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
 	}
@@ -66,6 +68,17 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			}
 		}
 		return productDao;
+	}
+
+	public Dao<Category, Integer> getCategoryDao() {
+		if (categoryDao == null) {
+			try {
+				categoryDao = getDao(Category.class);
+			} catch (SQLException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		return categoryDao;
 	}
 
 

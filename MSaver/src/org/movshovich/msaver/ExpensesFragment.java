@@ -53,7 +53,8 @@ public class ExpensesFragment extends Fragment {
 				.getExpenseDao().queryBuilder();
 		List<Expense> expenses;
 		try {
-			expenses = qb.orderBy("date", false).limit(5L).query();
+			qb.orderBy("date", false).limit(5L);
+			expenses = qb.where().lt("price", 0).query();
 			for (Expense e : expenses) {
 				MainActivity.databaseHelper.getProductDao().refresh(e.getProduct());
 			}
@@ -66,6 +67,7 @@ public class ExpensesFragment extends Fragment {
 		String sum;
 		int rowIdx = 0;
 		for (Expense e : expenses) {
+
 			TableRow row = (TableRow) tl.getChildAt(rowIdx);
 			TextView productText = (TextView) row.getChildAt(0);
 			TextView priceText = (TextView) row.getChildAt(1);
@@ -74,7 +76,7 @@ public class ExpensesFragment extends Fragment {
 			priceText.setText(sum);
 			rowIdx += 1;
 		}
-		
+
 	}
 
 	private void addListeners(final View view) {
@@ -103,7 +105,7 @@ public class ExpensesFragment extends Fragment {
 			public void afterTextChanged(Editable s) {
 			}
 		});
-		//TODO: show hint list when typing in product name 
+	
 		AutoCompleteTextView textView = (AutoCompleteTextView) view.findViewById(R.id.expenseProductEnter);
 		SimpleCursorAdapter sca = new SimpleCursorAdapter(view.getContext()
 				, android.R.layout.simple_dropdown_item_1line, null
@@ -205,7 +207,7 @@ public class ExpensesFragment extends Fragment {
 	  return str.matches("\\d*\\.?\\d{1,2}"); 
 	}
 	
-	private void updateBalance(View view) {
+	public void updateBalance(View view) {
 		String sum = "0";
 		try {
 			GenericRawResults<String[]> qRes = MainActivity.databaseHelper.getExpenseDao().queryRaw("select sum(price) from expenses");

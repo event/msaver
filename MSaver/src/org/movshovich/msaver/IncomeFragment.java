@@ -47,6 +47,14 @@ public class IncomeFragment extends Fragment {
 		return view;
 	}
 
+	@Override
+	public void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		updateBalance(getView());
+		Log.w("Msaver", "preved");
+	}
+
 	private void addListeners(final View view) {
 		Button addButton = (Button) view.findViewById(R.id.incomeAdd);
 		if (addButton != null) {
@@ -128,6 +136,7 @@ public class IncomeFragment extends Fragment {
 				.getExpenseDao().queryBuilder();
 		List<Expense> expenses;
 		try {
+			qb.where().gt("price", 0);
 			expenses = qb.orderBy("date", false).limit(5L).query();
 			for (Expense e : expenses) {
 				MainActivity.databaseHelper.getProductDao().refresh(e.getProduct());
@@ -148,8 +157,9 @@ public class IncomeFragment extends Fragment {
 			sum = addingDotToString(Integer.toString(e.getPrice()));
 			priceText.setText(sum);
 			rowIdx += 1;
+
 		}
-		
+
 	}
 
 
@@ -210,7 +220,7 @@ public class IncomeFragment extends Fragment {
 		  return str.matches("\\d*\\.?\\d{1,2}"); 
 		}
 
-	private void updateBalance(View view) {
+	public void updateBalance(View view) {
 		String sum = "0";
 		try {
 			GenericRawResults<String[]> qRes = MainActivity.databaseHelper.getExpenseDao().queryRaw("select sum(price) from expenses");
