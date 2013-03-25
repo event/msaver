@@ -132,13 +132,13 @@ public class IncomeFragment extends Fragment {
 	}
 	
 	private void showList(View view) {
-		QueryBuilder<Expense, Integer> qb = MainActivity.databaseHelper
-				.getExpenseDao().queryBuilder();
-		List<Expense> expenses;
+		QueryBuilder<Transaction, Integer> qb = MainActivity.databaseHelper
+				.getTransactionDao().queryBuilder();
+		List<Transaction> expenses;
 		try {
 			qb.where().gt("price", 0);
 			expenses = qb.orderBy("date", false).limit(5L).query();
-			for (Expense e : expenses) {
+			for (Transaction e : expenses) {
 				MainActivity.databaseHelper.getProductDao().refresh(e.getProduct());
 			}
 		} catch (SQLException e1) {
@@ -149,7 +149,7 @@ public class IncomeFragment extends Fragment {
 
 		String sum;
 		int rowIdx = 0;
-		for (Expense e : expenses) {
+		for (Transaction e : expenses) {
 			TableRow row = (TableRow) tl.getChildAt(rowIdx);
 			TextView productText = (TextView) row.getChildAt(0);
 			TextView priceText = (TextView) row.getChildAt(1);
@@ -159,7 +159,7 @@ public class IncomeFragment extends Fragment {
 			rowIdx += 1;
 
 		}
-
+		
 	}
 
 
@@ -177,7 +177,7 @@ public class IncomeFragment extends Fragment {
 				Product p = new Product();
 				p.setName(producttext.getText().toString());
 				
-				Expense e = new Expense();
+				Transaction e = new Transaction();
 				Date currentDate = new Date();
 				e.setDate(currentDate);
 				e.setProduct(p);
@@ -203,7 +203,7 @@ public class IncomeFragment extends Fragment {
 				
 				try {
 					MainActivity.databaseHelper.getProductDao().create(p);
-					MainActivity.databaseHelper.getExpenseDao().create(e);
+					MainActivity.databaseHelper.getTransactionDao().create(e);
 				} catch (SQLException e1) {
 					// TODO: process exception DB
 					e1.printStackTrace();
@@ -214,6 +214,7 @@ public class IncomeFragment extends Fragment {
 				producttext.getText().clear();
 				pricetext.getText().clear();
 				
+				
 
 	}
 	private boolean isNumeric(String str) {
@@ -223,23 +224,32 @@ public class IncomeFragment extends Fragment {
 	public void updateBalance(View view) {
 		String sum = "0";
 		try {
-			GenericRawResults<String[]> qRes = MainActivity.databaseHelper.getExpenseDao().queryRaw("select sum(price) from expenses");
+			Dao<Transaction, Integer> tDao = MainActivity.databaseHelper
+					.getTransactionDao();
+			QueryBuilder<Transaction, Integer> qb = tDao.queryBuilder();
+			qb.selectRaw("sum(price)");
+			GenericRawResults<String[]> qRes = tDao.queryRaw(qb.prepareStatementString());
 			sum = qRes.getFirstResult()[0];
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		Log.w("MSaver", "Sum is '" + sum + "'");
-		// TODO: Income update only after pressing  button Add in expense  - income window 
-		TextView sumview = (TextView) view.findViewById(R.id.incomeBalance);
-		sum = addingDotToString(sum);
-		sumview.setText(sum);
-		if ( sum.charAt(0) == '-' ){
-			sumview.setBackgroundColor(Color.RED);
+		if (sum != null) {
+			Log.w("MSaver", "Sum is '" + sum + "'");
+			// TODO: Income update only after pressing button Add in expense -
+			// income window
+			TextView sumview = (TextView) view.findViewById(R.id.incomeBalance);
+			sum = addingDotToString(sum);
+			sumview.setText(sum);
+			if (sum.charAt(0) == '-') {
+				sumview.setBackgroundColor(Color.RED);
+			} else {
+				sumview.setBackgroundColor(Color.GREEN);
+			}
 		} else {
-			sumview.setBackgroundColor(Color.GREEN);
+			sum = "0";
 		}
-			
+
 	}
 
 	public String addingDotToString(String num) {

@@ -1,10 +1,13 @@
 package org.movshovich.msaver;
 
+
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import android.app.Dialog;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -17,10 +20,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FilterQueryProvider;
+import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -29,7 +34,6 @@ import com.j256.ormlite.android.AndroidDatabaseResults;
 import com.j256.ormlite.dao.CloseableIterator;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.GenericRawResults;
-import com.j256.ormlite.stmt.PreparedQuery;
 import com.j256.ormlite.stmt.QueryBuilder;
 
 public class ExpensesFragment extends Fragment {
@@ -49,13 +53,13 @@ public class ExpensesFragment extends Fragment {
 	}
 
 	private void showList(View view) {
-		QueryBuilder<Expense, Integer> qb = MainActivity.databaseHelper
-				.getExpenseDao().queryBuilder();
-		List<Expense> expenses;
+		QueryBuilder<Transaction, Integer> qb = MainActivity.databaseHelper
+				.getTransactionDao().queryBuilder();
+		List<Transaction> expenses;
 		try {
 			qb.orderBy("date", false).limit(5L);
 			expenses = qb.where().lt("price", 0).query();
-			for (Expense e : expenses) {
+			for (Transaction e : expenses) {
 				MainActivity.databaseHelper.getProductDao().refresh(e.getProduct());
 			}
 		} catch (SQLException e1) {
@@ -66,7 +70,7 @@ public class ExpensesFragment extends Fragment {
 
 		String sum;
 		int rowIdx = 0;
-		for (Expense e : expenses) {
+		for (Transaction e : expenses) {
 
 			TableRow row = (TableRow) tl.getChildAt(rowIdx);
 			TextView productText = (TextView) row.getChildAt(0);
@@ -90,6 +94,7 @@ public class ExpensesFragment extends Fragment {
 			});
 		}
 		final EditText price = (EditText) view.findViewById(R.id.expensePriceEnter);
+		
 		price.addTextChangedListener(new TextWatcher() {
 			@Override
 			public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -150,7 +155,7 @@ public class ExpensesFragment extends Fragment {
 
 	}
 
-	private void onAddClick(View view) {
+	private void onAddClick(final View view) {
 		// TODO: reuse old products - don't create new products on every save
 		// TODO: when adding new product it should ask for some properties (i.e. category, shmategorey, etc.)
 		EditText producttext = (EditText) view.findViewById(R.id.expenseProductEnter);
@@ -161,10 +166,61 @@ public class ExpensesFragment extends Fragment {
 		if (producttext.getText().length() == 0  || price.isEmpty()){
 			return;
 		}
-		Product p = new Product();
-		p.setName(producttext.getText().toString());
 		
-		Expense e = new Expense();
+		QueryBuilder<Product, Integer> qb = MainActivity.databaseHelper
+				.getProductDao().queryBuilder();
+		List<Product> products;
+		try {
+			products = qb.where().eq("name", producttext.getText().toString()).query();
+			
+		} catch (SQLException e1) {
+			Log.w("MSaver", e1);
+			return;
+		}
+		Product p;
+		Category cat;
+		if (products.isEmpty()) {
+			p = new Product();
+			p.setName(producttext.getText().toString());
+			
+			LayoutInflater inflater = getActivity().getLayoutInflater();
+			View popup = inflater.inflate(R.layout.category, null, false);
+			Spinner spinner  = (Spinner) popup.findViewById(R.id.categories_spinner);
+			List <Category> categories;
+			List <String> nameList = new ArrayList<String>();
+			nameList.add("milk");
+			Dao<Category, Integer> dao = MainActivity.databaseHelper.getCategoryDao();
+			QueryBuilder<Category, Integer> qbCat =  dao.queryBuilder();
+			try {
+				categories = qbCat.query();
+				for (Category c : categories) {
+					nameList.add(c.getName());
+				}
+				
+			} catch (SQLException e) {
+				Log.w("MSaver", e);
+				return;
+			}
+			
+			ArrayAdapter<String> adapter = new ArrayAdapter<String>(view.getContext()
+					, android.R.layout.simple_spinner_item, nameList);
+			adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+			spinner.setAdapter(adapter);
+			Dialog d = new Dialog(view.getContext());
+			d.setContentView(popup);
+//			d.addContentView(popup, new LayoutParams(500, 500));
+			d.show();
+//			final PopupWindow pw = new PopupWindow(view);
+//			pw.setContentView(popup);
+//			pw.setWidth(500);
+//			pw.setHeight(500);
+//			pw.setFocusable(true);
+//			pw.showAtLocation(view.findViewById(R.id.expenseProductEnter), Gravity.CENTER, 0, 0); 
+		} else {
+			p = products.get(0);
+		}
+		
+		Transaction e = new Transaction();
 		Date currentDate = new Date();
 		e.setDate(currentDate);
 		e.setProduct(p);
@@ -190,7 +246,7 @@ public class ExpensesFragment extends Fragment {
 		
 		try {
 			MainActivity.databaseHelper.getProductDao().create(p);
-			MainActivity.databaseHelper.getExpenseDao().create(e);
+			MainActivity.databaseHelper.getTransactionDao().create(e);
 		} catch (SQLException e1) {
 			// TODO: process exception DB
 			e1.printStackTrace();
@@ -210,26 +266,36 @@ public class ExpensesFragment extends Fragment {
 	public void updateBalance(View view) {
 		String sum = "0";
 		try {
-			GenericRawResults<String[]> qRes = MainActivity.databaseHelper.getExpenseDao().queryRaw("select sum(price) from expenses");
+			Dao<Transaction, Integer> tDao = MainActivity.databaseHelper
+					.getTransactionDao();
+			QueryBuilder<Transaction, Integer> qb = tDao.queryBuilder();
+			qb.selectRaw("sum(price)");
+			GenericRawResults<String[]> qRes = tDao.queryRaw(qb.prepareStatementString());
+			
 			sum = qRes.getFirstResult()[0];
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		Log.w("MSaver", "Sum is '" + sum + "'");
-		TextView sumview = (TextView) view.findViewById(R.id.expenseBalance);
-		sum = addingDotToString(sum);
-		sumview.setText(sum);
-		if ( sum.charAt(0) == '-' ){
-			sumview.setBackgroundColor(Color.RED);
-		} else {
-			sumview.setBackgroundColor(Color.GREEN);
+		if (sum != null) {
+			Log.w("MSaver", "Sum is '" + sum + "'");
+			TextView sumview = (TextView) view
+					.findViewById(R.id.expenseBalance);
+			sum = addingDotToString(sum);
+			sumview.setText(sum);
+			if (sum.charAt(0) == '-') {
+				sumview.setBackgroundColor(Color.RED);
+			} else {
+				sumview.setBackgroundColor(Color.GREEN);
+			}
+		}else {
+			sum = "0";
 		}
-			
+	
 	}
 
 	public String addingDotToString(String num) {
-		if (num == "0" || num.isEmpty()) {
+		if ("0".equals(num) || num.isEmpty()) {
 			return num;
 		}
 		boolean neg = num.charAt(0) == '-';

@@ -17,7 +17,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	
 	private static final int DATABASE_VERSION = 1;
 
-	private Dao<Expense, Integer> expenseDao;
+	private Dao<Transaction, Integer> transactionDao;
 
 	private Dao<Product, Integer> productDao;
 
@@ -31,33 +31,36 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 	public void onCreate(SQLiteDatabase db, ConnectionSource connectionSource) {
 		try {
 			TableUtils.createTable(connectionSource, Product.class);
-			TableUtils.createTable(connectionSource, Expense.class);
+			TableUtils.createTable(connectionSource, Transaction.class);
+			TableUtils.createTable(connectionSource, Category.class);
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}
+		
 	}
-
+	
 	@Override
 	public void onUpgrade(SQLiteDatabase db, ConnectionSource connectionSource, int oldVersion, int newVersion) {
 		try {
 			TableUtils.dropTable(connectionSource, Product.class, true);
-			TableUtils.dropTable(connectionSource, Expense.class, true);
+			TableUtils.dropTable(connectionSource, Transaction.class, true);
+			TableUtils.dropTable(connectionSource, Category.class, true);
 			// after we drop the old databases, we create the new ones
 			onCreate(db, connectionSource);
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
-		}	
+		}		
 	}
 	
-	public Dao<Expense, Integer> getExpenseDao() {
-		if (expenseDao == null) {
+	public Dao<Transaction, Integer> getTransactionDao() {
+		if (transactionDao == null) {
 			try {
-				expenseDao = getDao(Expense.class);
+				transactionDao = getDao(Transaction.class);
 			} catch (SQLException e) {
 				throw new RuntimeException(e);
 			}
 		}
-		return expenseDao;
+		return transactionDao;
 	}
 	public Dao<Product, Integer> getProductDao() {
 		if (productDao == null) {

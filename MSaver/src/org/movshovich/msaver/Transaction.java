@@ -5,8 +5,8 @@ import java.util.Date;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
-@DatabaseTable(tableName = "expenses")
-public class Expense {
+@DatabaseTable(tableName = "transactions")
+public class Transaction {
 	
 	@DatabaseField(generatedId = true)
 	private int id;
@@ -20,7 +20,7 @@ public class Expense {
 	@DatabaseField
 	private int price;
 	
-	public Expense() {
+	public Transaction() {
 		super();
 	}
 	public Product getProduct() {

@@ -68,13 +68,13 @@ public class StatsFragment extends Fragment {
 	}
 	
 	private int[] valuesPieChartToday(View view) {
-		QueryBuilder<Expense, Integer> qb = MainActivity.databaseHelper
-				.getExpenseDao().queryBuilder();
+		QueryBuilder<Transaction, Integer> qb = MainActivity.databaseHelper
+				.getTransactionDao().queryBuilder();
 		int[] values = new int[] {};
-		List<Expense> expenses;
+		List<Transaction> expenses;
 		try {
 			expenses = qb.orderBy("date", false).limit(5L).query();
-			for (Expense e : expenses) {
+			for (Transaction e : expenses) {
 				MainActivity.databaseHelper.getProductDao().refresh(e.getProduct());				
 				}
 		} catch (SQLException e1) {
@@ -82,7 +82,7 @@ public class StatsFragment extends Fragment {
 			return null;
 		}
 		int rowIdx = 0;
-		for (Expense e : expenses) {
+		for (Transaction e : expenses) {
 			values[rowIdx] = e.getPrice();	
 			rowIdx += 1;
 		}

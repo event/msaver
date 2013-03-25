@@ -19,5 +19,7 @@
     <string name="income">income</string>
     <string name="last_incomes">Last incomes</string>
     <string name="amount">amount</string>
+    <string name="categories">Categories</string>
+    <string name="done">Done</string>
 
 </resources>
