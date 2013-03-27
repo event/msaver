@@ -21,5 +21,6 @@
     <string name="amount">amount</string>
     <string name="categories">Categories</string>
     <string name="done">Done</string>
+    <string name="add_category">add category</string>
 
 </resources>

@@ -7,7 +7,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.ListActivity;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -20,11 +23,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FilterQueryProvider;
+import android.widget.ListAdapter;
 import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -178,7 +183,6 @@ public class ExpensesFragment extends Fragment {
 			return;
 		}
 		Product p;
-		Category cat;
 		if (products.isEmpty()) {
 			p = new Product();
 			p.setName(producttext.getText().toString());
@@ -188,7 +192,7 @@ public class ExpensesFragment extends Fragment {
 			Spinner spinner  = (Spinner) popup.findViewById(R.id.categories_spinner);
 			List <Category> categories;
 			List <String> nameList = new ArrayList<String>();
-			nameList.add("milk");
+			nameList.add("New Category");
 			Dao<Category, Integer> dao = MainActivity.databaseHelper.getCategoryDao();
 			QueryBuilder<Category, Integer> qbCat =  dao.queryBuilder();
 			try {
@@ -206,16 +210,46 @@ public class ExpensesFragment extends Fragment {
 					, android.R.layout.simple_spinner_item, nameList);
 			adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 			spinner.setAdapter(adapter);
-			Dialog d = new Dialog(view.getContext());
-			d.setContentView(popup);
-//			d.addContentView(popup, new LayoutParams(500, 500));
-			d.show();
-//			final PopupWindow pw = new PopupWindow(view);
-//			pw.setContentView(popup);
-//			pw.setWidth(500);
-//			pw.setHeight(500);
-//			pw.setFocusable(true);
-//			pw.showAtLocation(view.findViewById(R.id.expenseProductEnter), Gravity.CENTER, 0, 0); 
+			spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
+				@Override
+				public void onItemSelected(AdapterView<?> parent, View viewSelected,
+						int position, long id) {
+					//TextView text = (TextView) viewSelected;
+					//if ("New Category".equals(text.getText().toString())) {
+// id is in different view						view.findViewById(R.id.categoryEditText).setVisibility(View.VISIBLE);
+					//} else {
+						//prisvoit  produktu ukazannuju kategoriju 
+					//}
+					
+					Log.w("MSaver", viewSelected.toString());
+				}
+
+				@Override
+				public void onNothingSelected(AdapterView<?> arg0) {
+					// TODO Auto-generated method stub
+					
+				}
+			});
+			//-- nachalo dialog
+			AlertDialog.Builder db = new AlertDialog.Builder(popup.getContext());
+			db.setTitle("Categories");
+			db.setView(popup);
+			db.setPositiveButton("Done", new 
+			    DialogInterface.OnClickListener() {
+			        public void onClick(DialogInterface dialog, int which) {
+			            }
+			        });
+			db.setCancelable(true);
+			db.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+				//TODO: then cancel -> not  add product!  
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					// TODO Auto-generated method stub
+					
+				}
+			});
+			db.show();
 		} else {
 			p = products.get(0);
 		}
