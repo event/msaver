@@ -23,5 +23,6 @@
     <string name="done">Done</string>
     <string name="add_category">add category</string>
     <string name="selectChartType">Select Chart Type</string>
+    <string name="fromDate">From Date</string>
 
 </resources>

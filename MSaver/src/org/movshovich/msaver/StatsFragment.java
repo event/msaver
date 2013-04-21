@@ -55,6 +55,8 @@ public class StatsFragment extends Fragment implements OnItemSelectedListener, O
 	private void start() {
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.MONTH, -1);
+		DateSelector datePicker = (DateSelector) view.findViewById(R.id.catPieStartDate);
+		datePicker.setDate(cal.getTime());
 		View chart;
 		try {
 			chart = makeCatPie(view, cal.getTime());
@@ -87,12 +89,11 @@ public class StatsFragment extends Fragment implements OnItemSelectedListener, O
 				+ " and `products`.`id` = `transactions`.`product_id`"
 				+ " and `transactions`.`date` > '" + fromDateTxt + "'"
 				+ " group by `categories`.`id` order by total desc limit 5";
-		Log.d("MSaver", "!!! query is: " + q);
 		GenericRawResults<String[]> queryRaw = MainActivity.databaseHelper
 				.getTransactionDao().queryRaw(q);
 
-		CategorySeries series = new CategorySeries("Pie Chart"); // шаг 3
-		DefaultRenderer dr = new DefaultRenderer(); // шаг 4
+		CategorySeries series = new CategorySeries("Pie Chart");
+		DefaultRenderer dr = new DefaultRenderer(); 
 
 		Iterator<Integer> colorIter = PIE_CHART_COLORS.iterator();
 		for (String[] r : queryRaw.getResults()) {
@@ -103,7 +104,7 @@ public class StatsFragment extends Fragment implements OnItemSelectedListener, O
 		}
 		dr.setZoomButtonsVisible(true);
 		dr.setZoomEnabled(true);
-		dr.setChartTitle("Today pie Chart!");
+		dr.setChartTitle("Money Spent by Categories");
 		dr.setChartTitleTextSize(40);
 		dr.setPanEnabled(false);
 		dr.setLabelsTextSize(20.0f);

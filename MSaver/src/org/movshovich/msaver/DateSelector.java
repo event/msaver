@@ -14,8 +14,9 @@ import android.widget.TextView;
 
 public class DateSelector extends TextView {
 
-	private static final java.text.DateFormat FORMAT = SimpleDateFormat.getDateInstance(SimpleDateFormat.SHORT);
+	private static final java.text.DateFormat FORMAT = SimpleDateFormat.getDateInstance(SimpleDateFormat.MEDIUM);
 	private OnDateSetListener odsl = null;
+	private Date date;
 	public DateSelector(Context context) {
 		super(context);
 		init();
@@ -28,7 +29,7 @@ public class DateSelector extends TextView {
 				showDateSelectorDialog(v);
 			}
 		});
-		update(new Date());
+		setDate(new Date());
 	}
 
 	public DateSelector(Context context, AttributeSet attrs, int defStyle) {
@@ -41,19 +42,21 @@ public class DateSelector extends TextView {
 		init();
 	}
 
-	private void update(Date date) {
+	public void setDate(Date date) {
+		this.date = date;
 		setText(FORMAT.format(date));
 	}
 
 	protected void showDateSelectorDialog(View v) {
 		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
 		DatePickerDialog datePickerDialog = new DatePickerDialog(v.getContext(), new OnDateSetListener() {
 			@Override
 			public void onDateSet(DatePicker view, int year, int monthOfYear,
 					int dayOfMonth) {
 				Calendar cal = Calendar.getInstance();
 				cal.set(year, monthOfYear, dayOfMonth);
-				update(cal.getTime());
+				setDate(cal.getTime());
 				if (odsl != null) {
 					odsl.onDateSet(view, year, monthOfYear, dayOfMonth);
 				}
