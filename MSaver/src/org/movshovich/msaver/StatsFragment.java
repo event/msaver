@@ -1,6 +1,9 @@
 package org.movshovich.msaver;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import org.achartengine.ChartFactory;
@@ -9,6 +12,7 @@ import org.achartengine.model.CategorySeries;
 import org.achartengine.renderer.DefaultRenderer;
 import org.achartengine.renderer.SimpleSeriesRenderer;
 
+import com.j256.ormlite.dao.GenericRawResults;
 import com.j256.ormlite.stmt.QueryBuilder;
 
 import android.graphics.Color;
@@ -22,35 +26,45 @@ import android.widget.LinearLayout;
 
 public class StatsFragment extends Fragment {
 
+	private static final List<Integer> PIE_CHART_COLORS = Arrays.asList(Color.BLUE, Color.GREEN
+				, Color.MAGENTA, Color.CYAN, Color.RED);
+	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.stats, container, false);
 		super.onCreate(savedInstanceState);
-		View chart = makeChart(view);
+		View chart;
+		try {
+			chart = makeCatPie(view);
+		} catch (SQLException e) {
+			Log.w("MSaver", e);
+			return view;
+		}
 		LinearLayout viewChart = (LinearLayout) view.findViewById(R.id.statsLayout);
 		viewChart.addView(chart);
 		addListeners(view);
 		return view;
 	}
 
-	private GraphicalView makeChart(View view) {
-		//int[] values = valuesPieChartToday(view);
-		//TODO: 3 piecharts  1.cat for today 2. cat for  week 3. cat for month
-		int[] values = new int[] { 5, 15, 25, 50, 75 }; // шаг 2
-		String[] bars = new String[] { "Francesca's", "King of Clubs",
-				"Zen Lounge", "Tied House", "Molly Magees" };
-		int[] colors = new int[] { Color.BLUE, Color.GREEN, Color.MAGENTA,
-				Color.CYAN, Color.RED };
+	private GraphicalView makeCatPie(View view) throws SQLException {
+		String q = "select `categories`.`id`, `categories`.`name`, sum(`transactions`.`price`) as total"
+				+ " from `categories` inner join `products` inner join `transactions`"
+				+ " where `categories`.`id` != 1 and `categories`.`id` = `products`.`category_id`"
+				+ " and `products`.`id` = `transactions`.`product_id`"
+				+ " group by `categories`.`id` limit 5 order by total desc";
+		GenericRawResults<String[]> queryRaw = MainActivity.databaseHelper
+				.getTransactionDao().queryRaw(q);
 
 		CategorySeries series = new CategorySeries("Pie Chart"); // шаг 3
 		DefaultRenderer dr = new DefaultRenderer(); // шаг 4
 
-		for (int v = 0; v < 5; v++) { // шаг 5
-			series.add(bars[v], values[v]);
-			SimpleSeriesRenderer r = new SimpleSeriesRenderer();
-			r.setColor(colors[v]);
-			dr.addSeriesRenderer(r);
+		Iterator<Integer> colorIter = PIE_CHART_COLORS.iterator();
+		for (String[] r : queryRaw.getResults()) {
+			series.add(r[1], Double.valueOf(r[2]));
+			SimpleSeriesRenderer ssr = new SimpleSeriesRenderer();
+			ssr.setColor(colorIter.next());
+			dr.addSeriesRenderer(ssr);
 		}
 		dr.setZoomButtonsVisible(true);
 		dr.setZoomEnabled(true);
@@ -67,27 +81,4 @@ public class StatsFragment extends Fragment {
 		LinearLayout viewChart = (LinearLayout) view.findViewById(R.id.statsLayout);
 	}
 	
-	private int[] valuesPieChartToday(View view) {
-		QueryBuilder<Transaction, Integer> qb = MainActivity.databaseHelper
-				.getTransactionDao().queryBuilder();
-		int[] values = new int[] {};
-		List<Transaction> expenses;
-		try {
-			expenses = qb.orderBy("date", false).limit(5L).query();
-			for (Transaction e : expenses) {
-				MainActivity.databaseHelper.getProductDao().refresh(e.getProduct());				
-				}
-		} catch (SQLException e1) {
-			Log.w("MSaver", e1);
-			return null;
-		}
-		int rowIdx = 0;
-		for (Transaction e : expenses) {
-			values[rowIdx] = e.getPrice();	
-			rowIdx += 1;
-		}
-		return values;
-		
-	}
-
 }

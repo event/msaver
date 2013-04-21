@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="chart_types">
+        <item>Category Pie</item>
+        <item>Weekly Spend</item>
+    </string-array>
+</resources>
