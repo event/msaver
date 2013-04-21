@@ -29,11 +29,11 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FilterQueryProvider;
-import android.widget.ListAdapter;
 import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.j256.ormlite.android.AndroidDatabaseResults;
 import com.j256.ormlite.dao.CloseableIterator;
@@ -76,7 +76,6 @@ public class ExpensesFragment extends Fragment {
 		String sum;
 		int rowIdx = 0;
 		for (Transaction e : expenses) {
-
 			TableRow row = (TableRow) tl.getChildAt(rowIdx);
 			TextView productText = (TextView) row.getChildAt(0);
 			TextView priceText = (TextView) row.getChildAt(1);
@@ -89,6 +88,15 @@ public class ExpensesFragment extends Fragment {
 	}
 
 	private void addListeners(final View view) {
+		Dao<Product, Integer> dao = MainActivity.databaseHelper.getProductDao();
+		try {
+			for (Product p: dao.queryBuilder().query()) {
+				MainActivity.databaseHelper.getCategoryDao().refresh(p.getCategory());
+			}
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		Button addButton = (Button)  view.findViewById(R.id.expenseAdd);
 		if (addButton != null) {
 			addButton.setOnClickListener(new View.OnClickListener() {
@@ -161,103 +169,16 @@ public class ExpensesFragment extends Fragment {
 	}
 
 	private void onAddClick(final View view) {
-		// TODO: reuse old products - don't create new products on every save
-		// TODO: when adding new product it should ask for some properties (i.e. category, shmategorey, etc.)
-		EditText producttext = (EditText) view.findViewById(R.id.expenseProductEnter);
-		EditText pricetext = (EditText) view.findViewById(R.id.expensePriceEnter);
+		final EditText producttext = (EditText) view.findViewById(R.id.expenseProductEnter);
+		final EditText pricetext = (EditText) view.findViewById(R.id.expensePriceEnter);
 			
 		String coinPrice = pricetext.getText().toString();
 		String price = coinPrice;
 		if (producttext.getText().length() == 0  || price.isEmpty()){
 			return;
 		}
-		
-		QueryBuilder<Product, Integer> qb = MainActivity.databaseHelper
-				.getProductDao().queryBuilder();
-		List<Product> products;
-		try {
-			products = qb.where().eq("name", producttext.getText().toString()).query();
-			
-		} catch (SQLException e1) {
-			Log.w("MSaver", e1);
-			return;
-		}
-		Product p;
-		if (products.isEmpty()) {
-			p = new Product();
-			p.setName(producttext.getText().toString());
-			
-			LayoutInflater inflater = getActivity().getLayoutInflater();
-			View popup = inflater.inflate(R.layout.category, null, false);
-			Spinner spinner  = (Spinner) popup.findViewById(R.id.categories_spinner);
-			List <Category> categories;
-			List <String> nameList = new ArrayList<String>();
-			nameList.add("New Category");
-			Dao<Category, Integer> dao = MainActivity.databaseHelper.getCategoryDao();
-			QueryBuilder<Category, Integer> qbCat =  dao.queryBuilder();
-			try {
-				categories = qbCat.query();
-				for (Category c : categories) {
-					nameList.add(c.getName());
-				}
-				
-			} catch (SQLException e) {
-				Log.w("MSaver", e);
-				return;
-			}
-			
-			ArrayAdapter<String> adapter = new ArrayAdapter<String>(view.getContext()
-					, android.R.layout.simple_spinner_item, nameList);
-			adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-			spinner.setAdapter(adapter);
-			spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+		final Transaction e = new Transaction();
 
-				@Override
-				public void onItemSelected(AdapterView<?> parent, View viewSelected,
-						int position, long id) {
-					//TextView text = (TextView) viewSelected;
-					//if ("New Category".equals(text.getText().toString())) {
-// id is in different view						view.findViewById(R.id.categoryEditText).setVisibility(View.VISIBLE);
-					//} else {
-						//prisvoit  produktu ukazannuju kategoriju 
-					//}
-					
-					Log.w("MSaver", viewSelected.toString());
-				}
-
-				@Override
-				public void onNothingSelected(AdapterView<?> arg0) {
-					// TODO Auto-generated method stub
-					
-				}
-			});
-			//-- nachalo dialog
-			AlertDialog.Builder db = new AlertDialog.Builder(popup.getContext());
-			db.setTitle("Categories");
-			db.setView(popup);
-			db.setPositiveButton("Done", new 
-			    DialogInterface.OnClickListener() {
-			        public void onClick(DialogInterface dialog, int which) {
-			            }
-			        });
-			db.setCancelable(true);
-			db.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-				//TODO: then cancel -> not  add product!  
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					// TODO Auto-generated method stub
-					
-				}
-			});
-			db.show();
-		} else {
-			p = products.get(0);
-		}
-		
-		Transaction e = new Transaction();
-		Date currentDate = new Date();
-		e.setDate(currentDate);
-		e.setProduct(p);
 		if (isNumeric(coinPrice)) {
 			
 			int position = coinPrice.indexOf(".");
@@ -277,20 +198,134 @@ public class ExpensesFragment extends Fragment {
 			pricetext.setTextColor(Color.RED);
 			return;
 		}	
+
+		QueryBuilder<Product, Integer> qb = MainActivity.databaseHelper
+				.getProductDao().queryBuilder();
+		List<Product> products;
+		try {
+			products = qb.where().eq("name", producttext.getText().toString()).query();
+			
+		} catch (SQLException e1) {
+			Log.w("MSaver", e1);
+			return;
+		}
+		Date currentDate = new Date();
+		e.setDate(currentDate);
+
+		final Product p;
+		if (products.isEmpty()) {
+			p = new Product();
+			p.setName(producttext.getText().toString());
+			
+			LayoutInflater inflater = getActivity().getLayoutInflater();
+			final View popup = inflater.inflate(R.layout.category, null, false);
+			final Spinner spinner  = (Spinner) popup.findViewById(R.id.categories_spinner);
+			final List <Category> categories;
+			List <String> nameList = new ArrayList<String>();
+			nameList.add("New Category");
+			final Dao<Category, Integer> catDao = MainActivity.databaseHelper.getCategoryDao();
+			QueryBuilder<Category, Integer> qbCat =  catDao.queryBuilder();
+			try {
+				categories = qbCat.query();
+				
+			} catch (SQLException se) {
+				Log.w("MSaver", se);
+				return;
+			}
+			for (Category c : categories) {
+				nameList.add(c.getName());
+			}
+			
+			ArrayAdapter<String> adapter = new ArrayAdapter<String>(view.getContext()
+					, android.R.layout.simple_spinner_item, nameList);
+			adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+			spinner.setAdapter(adapter);
+			spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
+				@Override
+				public void onItemSelected(AdapterView<?> parent, View viewSelected,
+						int position, long id) {
+					popup.findViewById(R.id.categoryEditText).setVisibility(
+							position == 0 ? View.VISIBLE : View.INVISIBLE);
+				}
+
+				@Override
+				public void onNothingSelected(AdapterView<?> arg0) {
+				}
+			});
+			//-- nachalo dialog
+			AlertDialog.Builder db = new AlertDialog.Builder(popup.getContext());
+			db.setTitle("Categories");
+			db.setView(popup);
+			db.setPositiveButton("Done", new 
+			    DialogInterface.OnClickListener() {
+			        public void onClick(DialogInterface dialog, int which) {
+			        	int pos = spinner.getSelectedItemPosition();
+			        	if (pos > 0) {
+			        		p.setCategory(categories.get(pos - 1));
+			        	} else {
+			        		TextView catNameView = (TextView) popup.findViewById(R.id.categoryEditText);
+			        		String catName = catNameView.getText().toString();
+			        		if (catName.isEmpty() || catName.matches("^\\s+$")) {
+			        			Toast.makeText(view.getContext(), "Category Name cannot be empty!"
+			        						, Toast.LENGTH_SHORT).show();
+			        			return;
+			        		}
+			        		Category cat = new Category();
+			        		cat.setName(catName);
+			        		try {
+								catDao.create(cat);
+							} catch (SQLException e) {
+			        			Toast.makeText(view.getContext(), "Internal Error"
+		        						, Toast.LENGTH_LONG).show();
+								Log.w("MSaver", e);
+								return;
+							}
+			        		p.setCategory(cat);
+			        	}
+			        	try {
+			        		MainActivity.databaseHelper.getProductDao().create(p);
+			        	} catch (SQLException e) {
+			        		Toast.makeText(view.getContext(), "Internal Error"
+			        				, Toast.LENGTH_LONG).show();
+			        		Log.w("MSaver", e);
+			        		return;
+			        	}
+			        	finalizeTransaction(view, producttext, pricetext, e, p);
+			        }
+			});
+			db.setCancelable(true);
+			db.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+				}
+			});
+			db.show();
+		} else {
+			p = products.get(0);
+			finalizeTransaction(view, producttext, pricetext, e, p);
+		}
+		
+		
+	}
+
+	private void finalizeTransaction(final View view, EditText producttext,
+			EditText pricetext, Transaction e, final Product p) {
+		e.setProduct(p);
 		
 		try {
-			MainActivity.databaseHelper.getProductDao().create(p);
 			MainActivity.databaseHelper.getTransactionDao().create(e);
 		} catch (SQLException e1) {
-			// TODO: process exception DB
-			e1.printStackTrace();
+			Toast.makeText(view.getContext(), "Internal Error"
+					, Toast.LENGTH_LONG).show();
+			Log.w("MSaver", e1);
+			return;
 		}
 		
 		updateBalance(view);
 		showList(view);
 		producttext.getText().clear();
 		pricetext.getText().clear();
-		
 	}
 	
 	private boolean isNumeric(String str) {

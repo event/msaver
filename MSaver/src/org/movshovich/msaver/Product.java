@@ -9,7 +9,8 @@ public class Product {
 	private int id;
 	@DatabaseField
 	private String name;
-	
+	@DatabaseField(canBeNull=false, foreign = true)
+	private Category category;
 	
 	public Product() {
 		super();
@@ -25,6 +26,12 @@ public class Product {
 	}
 	public void setName(String name) {
 		this.name = name;
+	}
+	public Category getCategory() {
+		return category;
+	}
+	public void setCategory(Category category) {
+		this.category = category;
 	}
 
 }
