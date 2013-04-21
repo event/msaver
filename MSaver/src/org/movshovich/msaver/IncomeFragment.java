@@ -2,6 +2,7 @@ package org.movshovich.msaver;
 
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -11,6 +12,8 @@ import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.GenericRawResults;
 import com.j256.ormlite.stmt.QueryBuilder;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -23,13 +26,17 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FilterQueryProvider;
+import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class IncomeFragment extends Fragment {
 
@@ -40,19 +47,28 @@ public class IncomeFragment extends Fragment {
 		addListeners(view);
 		updateBalance(view);
 		showList(view);
-		//TODO: choose  date
 		TextView dateView = (TextView) view.findViewById(R.id.incomeDate);		
 		SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy");		
 		dateView.setText(sdf.format(new Date()));
+		try {
+			Dao<Category, Integer> catDao = MainActivity.databaseHelper.getCategoryDao();
+			Category cat = catDao.queryForId(1);
+			if (cat == null) {
+				cat = new Category();
+				cat.setName("Income");
+				catDao.create(cat);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return view;
 	}
 
 	@Override
 	public void onResume() {
-		// TODO Auto-generated method stub
 		super.onResume();
 		updateBalance(getView());
-		Log.w("Msaver", "preved");
 	}
 
 	private void addListeners(final View view) {
@@ -108,12 +124,15 @@ public class IncomeFragment extends Fragment {
 				}
 				Dao<Product, Integer> dao = MainActivity.databaseHelper
 						.getProductDao();
-				QueryBuilder<Product, Integer> qb = dao.queryBuilder();
-				// when you are done, prepare your query and build an iterator
+				QueryBuilder<Product, Integer> qb =  dao.queryBuilder();
+				QueryBuilder<Category, Integer> catQB = MainActivity.databaseHelper.getCategoryDao().queryBuilder();
 				CloseableIterator<String[]> iterator = null;
 				try {
-					qb.selectRaw("`id` as `_id`", "`name`");
+					catQB.where().idEq(MainActivity.INCOME_CAT_ID);
+
+					qb.selectRaw("`products`.`id` as `_id`", "`products`.`name`");
 					qb.where().like("name", constraint.toString() + "%");
+					qb.join(catQB);
 					String prepareStatementString = qb.prepareStatementString();
 					Log.d("MSaver", qb.prepareStatementString());
 					GenericRawResults<String[]> rawRes = dao
@@ -130,7 +149,7 @@ public class IncomeFragment extends Fragment {
 		});
 
 	}
-	
+
 	private void showList(View view) {
 		QueryBuilder<Transaction, Integer> qb = MainActivity.databaseHelper
 				.getTransactionDao().queryBuilder();
@@ -159,67 +178,91 @@ public class IncomeFragment extends Fragment {
 			rowIdx += 1;
 
 		}
-		
-	}
-
-
-	private void onAddClick(View view) {
-		// TODO: reuse old products - don't create new products on every save
-				// TODO: when adding new product it should ask for some properties (i.e. category, shmategorey, etc.)
-				EditText producttext = (EditText) view.findViewById(R.id.incomeProductEnter);
-				EditText pricetext = (EditText) view.findViewById(R.id.incomeSumEnter);
-					
-				String coinPrice = pricetext.getText().toString();
-				String price = coinPrice;
-				if (producttext.getText().length() == 0  || price.isEmpty()){
-					return;
-				}
-				Product p = new Product();
-				p.setName(producttext.getText().toString());
-				
-				Transaction e = new Transaction();
-				Date currentDate = new Date();
-				e.setDate(currentDate);
-				e.setProduct(p);
-				if (isNumeric(coinPrice)) {
-					
-					int position = coinPrice.indexOf(".");
-					int length = coinPrice.length();
-					int factor = 1;
-					if (position == -1 ){
-						factor = 100;
-					}else if (length - position == 2){
-						factor = 10;
-					}else if (length - position == 3){
-						factor = 1;
-					} 
-					coinPrice = coinPrice.replaceAll("\\.", ""); 
-					e.setPrice (Integer.parseInt(coinPrice) * factor); 					
-
-				}else{
-					pricetext.setTextColor(Color.RED);
-					return;
-				}	
-				
-				try {
-					MainActivity.databaseHelper.getProductDao().create(p);
-					MainActivity.databaseHelper.getTransactionDao().create(e);
-				} catch (SQLException e1) {
-					// TODO: process exception DB
-					e1.printStackTrace();
-				}
-				
-				updateBalance(view);
-				showList(view);
-				producttext.getText().clear();
-				pricetext.getText().clear();
-				
-				
 
 	}
-	private boolean isNumeric(String str) {
-		  return str.matches("\\d*\\.?\\d{1,2}"); 
+
+	private void onAddClick(final View view) {
+		final EditText producttext = (EditText) view.findViewById(R.id.incomeProductEnter);
+		final EditText pricetext = (EditText) view.findViewById(R.id.incomeSumEnter);
+			
+		String coinPrice = pricetext.getText().toString();
+		String price = coinPrice;
+		if (producttext.getText().length() == 0  || price.isEmpty()){
+			return;
 		}
+		final Transaction e = new Transaction();
+
+		if (isNumeric(coinPrice)) {
+			int position = coinPrice.indexOf(".");
+			int length = coinPrice.length();
+			int factor = 1;
+			if (position == -1 ){
+				factor = 100;
+			}else if (length - position == 2){
+				factor = 10;
+			}else if (length - position == 3){
+				factor = 1;
+			} 
+			coinPrice = coinPrice.replaceAll("\\.", ""); 
+			e.setPrice (Integer.parseInt(coinPrice) * factor); 					
+		}else{
+			pricetext.setTextColor(Color.RED);
+			return;
+		}	
+
+		QueryBuilder<Product, Integer> qb = MainActivity.databaseHelper
+				.getProductDao().queryBuilder();
+		Dao<Category, Integer> catDao = MainActivity.databaseHelper.getCategoryDao();
+		QueryBuilder<Category, Integer> catQB = catDao.queryBuilder();
+		List<Product> products;
+		try {
+			catQB.where().idEq(MainActivity.INCOME_CAT_ID);
+			qb.where().eq("name", producttext.getText().toString());
+			products = qb.join(catQB).query();
+			
+		} catch (SQLException e1) {
+			Log.w("MSaver", e1);
+			return;
+		}
+		Date currentDate = new Date();
+		e.setDate(currentDate);
+
+		final Product p;
+		if (products.isEmpty()) {
+			p = new Product();
+			p.setName(producttext.getText().toString());
+			try {
+				p.setCategory(catDao.queryForId(1));
+				MainActivity.databaseHelper.getProductDao().create(p);
+			} catch (SQLException se) {
+				Toast.makeText(view.getContext(), "Internal Error",
+						Toast.LENGTH_LONG).show();
+				Log.w("MSaver", se);
+				return;
+			}
+		} else {
+			p = products.get(0);
+		}
+		e.setProduct(p);
+		
+		try {
+			MainActivity.databaseHelper.getTransactionDao().create(e);
+		} catch (SQLException e1) {
+			Toast.makeText(view.getContext(), "Internal Error"
+					, Toast.LENGTH_LONG).show();
+			Log.w("MSaver", e1);
+			return;
+		}
+		
+		updateBalance(view);
+		showList(view);
+		producttext.getText().clear();
+		pricetext.getText().clear();
+	}
+
+	private boolean isNumeric(String str) {
+		return str.matches("\\d*\\.?\\d{1,2}"); 
+	}
 
 	public void updateBalance(View view) {
 		String sum = "0";
@@ -269,7 +312,7 @@ public class IncomeFragment extends Fragment {
 			return new StringBuilder().append(prepend).append("0.").append(num).toString();
 		} else {
 			return new StringBuilder().append(prepend).append(num.substring(0, lenNum-2))
-						.append('.').append(num.substring(lenNum - 2)).toString();
+					.append('.').append(num.substring(lenNum - 2)).toString();
 		}
 	}
 

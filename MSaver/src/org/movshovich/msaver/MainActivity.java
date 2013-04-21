@@ -32,6 +32,8 @@ public class MainActivity extends FragmentActivity implements
 
 	
 	public static DatabaseHelper databaseHelper;
+	
+	public static final int INCOME_CAT_ID = 1; 
 	/**
 	 * The {@link ViewPager} that will host the section contents.
 	 */

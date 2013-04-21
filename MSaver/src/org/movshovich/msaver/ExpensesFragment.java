@@ -147,11 +147,14 @@ public class ExpensesFragment extends Fragment {
 				}
 				Dao<Product, Integer> dao = MainActivity.databaseHelper.getProductDao();
 				QueryBuilder<Product, Integer> qb =  dao.queryBuilder();
-				// when you are done, prepare your query and build an iterator
+				QueryBuilder<Category, Integer> catQB = MainActivity.databaseHelper.getCategoryDao().queryBuilder();
 				CloseableIterator<String[]> iterator = null;
 				try {
-					qb.selectRaw("`id` as `_id`", "`name`");
+					catQB.where().not().idEq(MainActivity.INCOME_CAT_ID);
+
+					qb.selectRaw("`products`.`id` as `_id`", "`products`.`name`");
 					qb.where().like("name", constraint.toString() + "%");
+					qb.join(catQB);
 					String prepareStatementString = qb.prepareStatementString();
 					Log.d("MSaver", qb.prepareStatementString());
 					GenericRawResults<String[]> rawRes = dao.queryRaw(prepareStatementString);
@@ -201,9 +204,12 @@ public class ExpensesFragment extends Fragment {
 
 		QueryBuilder<Product, Integer> qb = MainActivity.databaseHelper
 				.getProductDao().queryBuilder();
+		QueryBuilder<Category, Integer> catQB = MainActivity.databaseHelper.getCategoryDao().queryBuilder();
 		List<Product> products;
 		try {
-			products = qb.where().eq("name", producttext.getText().toString()).query();
+			catQB.where().not().idEq(MainActivity.INCOME_CAT_ID);
+			qb.where().eq("name", producttext.getText().toString());
+			products = qb.join(catQB).query();
 			
 		} catch (SQLException e1) {
 			Log.w("MSaver", e1);
@@ -226,8 +232,7 @@ public class ExpensesFragment extends Fragment {
 			final Dao<Category, Integer> catDao = MainActivity.databaseHelper.getCategoryDao();
 			QueryBuilder<Category, Integer> qbCat =  catDao.queryBuilder();
 			try {
-				categories = qbCat.query();
-				
+				categories = qbCat.where().not().idEq(MainActivity.INCOME_CAT_ID).query();
 			} catch (SQLException se) {
 				Log.w("MSaver", se);
 				return;
@@ -305,8 +310,6 @@ public class ExpensesFragment extends Fragment {
 			p = products.get(0);
 			finalizeTransaction(view, producttext, pricetext, e, p);
 		}
-		
-		
 	}
 
 	private void finalizeTransaction(final View view, EditText producttext,
