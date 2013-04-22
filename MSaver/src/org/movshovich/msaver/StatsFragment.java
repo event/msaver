@@ -11,9 +11,14 @@ import java.util.List;
 import org.achartengine.ChartFactory;
 import org.achartengine.GraphicalView;
 import org.achartengine.model.CategorySeries;
+import org.achartengine.model.XYMultipleSeriesDataset;
+import org.achartengine.model.XYSeries;
 import org.achartengine.renderer.DefaultRenderer;
 import org.achartengine.renderer.SimpleSeriesRenderer;
+import org.achartengine.renderer.XYMultipleSeriesRenderer;
+import org.achartengine.renderer.XYSeriesRenderer;
 
+import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.GenericRawResults;
 import com.j256.ormlite.stmt.QueryBuilder;
 
@@ -113,6 +118,49 @@ public class StatsFragment extends Fragment implements OnItemSelectedListener, O
 		return ChartFactory.getPieChartView(view.getContext(), series, dr);
 	}
 
+	private GraphicalView makeWeeklySpend(View view, Date fromDate) throws SQLException {
+		Calendar start = Calendar.getInstance();
+		Calendar end = Calendar.getInstance();
+		Calendar now = Calendar.getInstance();
+		start.setTime(fromDate);
+		end.setTime(start.getTime());
+		end.add(Calendar.WEEK_OF_YEAR, 1);
+		
+		Dao<Transaction, Integer> txDao = MainActivity.databaseHelper.getTransactionDao();
+		Dao<Product,Integer> prodDao = MainActivity.databaseHelper.getProductDao();
+		Dao<Category,Integer> catDao = MainActivity.databaseHelper.getCategoryDao();
+		XYSeries series = new XYSeries("Weekly Spend");
+		XYMultipleSeriesRenderer dr = new XYMultipleSeriesRenderer(); 
+		int resIdx = 0;
+		while (start.before(now)) {
+			QueryBuilder<Category, Integer> catQb = catDao.queryBuilder();
+			QueryBuilder<Product, Integer> prodQb = prodDao.queryBuilder();
+			catQb.where().not().idEq(MainActivity.INCOME_CAT_ID);
+			prodQb.join(catQb);
+			QueryBuilder<Transaction, Integer> qb = txDao.queryBuilder();
+			qb.selectRaw("sum(`transactions`.`price`)");
+			qb.join(prodQb);
+			qb.where().between("date", start.getTime(), end.getTime());
+			GenericRawResults<String[]> rawRes = qb.queryRaw();
+			int val = Integer.valueOf(rawRes.getFirstResult()[0]);
+			series.add(resIdx, val);
+			start.add(Calendar.WEEK_OF_YEAR, 1);
+			end.add(Calendar.WEEK_OF_YEAR, 1);
+		}
+
+		XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
+		dataset.addSeries(series);
+		dr.setZoomButtonsVisible(true);
+		dr.setZoomEnabled(true);
+		dr.setChartTitle("Money Spent by Categories");
+		dr.setChartTitleTextSize(40);
+		dr.setPanEnabled(false);
+		dr.setLabelsTextSize(20.0f);
+		dr.setLabelsColor(Color.BLACK);
+		dr.setShowLegend(false);
+		return ChartFactory.getLineChartView(view.getContext(), dataset, dr);
+	}
+
 	private void addListeners(final View view) {
 		Spinner s = (Spinner) view.findViewById(R.id.chartType);
 		s.setOnItemSelectedListener(this);
@@ -123,12 +171,12 @@ public class StatsFragment extends Fragment implements OnItemSelectedListener, O
 	@Override
 	public void onItemSelected(AdapterView<?> parent, View viewSelected,
 			int position, long id) {
-		View sdSel = view.findViewById(R.id.catPieStartDate);
-		int visible = View.GONE;
-		if (position == CATPIE_IDX) {
-			visible = View.VISIBLE;
-		}
-		sdSel.setVisibility(visible);
+//		View sdSel = view.findViewById(R.id.catPieStartDate);
+//		int visible = View.GONE;
+//		if (position == CATPIE_IDX) {
+//			visible = View.VISIBLE;
+//		}
+//		sdSel.setVisibility(visible);
 	}
 
 	@Override
