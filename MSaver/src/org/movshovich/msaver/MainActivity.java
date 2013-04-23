@@ -6,13 +6,16 @@ import com.j256.ormlite.android.apptools.OpenHelperManager;
 
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -30,10 +33,9 @@ public class MainActivity extends FragmentActivity implements
 	 */
 	private SectionsPagerAdapter sectionsPagerAdapter;
 
-	
 	public static DatabaseHelper databaseHelper;
-	
-	public static final int INCOME_CAT_ID = 1; 
+
+	public static final int INCOME_CAT_ID = 1;
 	/**
 	 * The {@link ViewPager} that will host the section contents.
 	 */
@@ -77,7 +79,8 @@ public class MainActivity extends FragmentActivity implements
 					.setText(sectionsPagerAdapter.getPageTitle(i))
 					.setTabListener(this));
 		}
-		databaseHelper = OpenHelperManager.getHelper(this, DatabaseHelper.class);
+		databaseHelper = OpenHelperManager
+				.getHelper(this, DatabaseHelper.class);
 	}
 
 	@Override
@@ -91,20 +94,38 @@ public class MainActivity extends FragmentActivity implements
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.activity_main, menu);
+		Intent prefsIntent = new Intent(getApplicationContext(),
+				MSaverPreferenceActivity.class);
+		MenuItem preferences = menu.findItem(R.id.menu_settings);
+		preferences.setIntent(prefsIntent);
 		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if (item.getItemId() == R.id.menu_settings) {
+			startActivity(item.getIntent());
+			return true;
+		}
+		return false;
 	}
 
 	@Override
 	public void onTabSelected(ActionBar.Tab tab,
 			FragmentTransaction fragmentTransaction) {
-		// When the given tab is selected, switch to the corresponding page in the ViewPager.
+		// When the given tab is selected, switch to the corresponding page in
+		// the ViewPager.
 		viewPager.setCurrentItem(tab.getPosition());
-		//update balance
-		if (sectionsPagerAdapter.expensesFragment.getView() != null){
-		sectionsPagerAdapter.expensesFragment.updateBalance(sectionsPagerAdapter.expensesFragment.getView());
+		// update balance
+		if (sectionsPagerAdapter.expensesFragment.getView() != null) {
+			sectionsPagerAdapter.expensesFragment
+					.updateBalance(sectionsPagerAdapter.expensesFragment
+							.getView());
 		}
-		if (sectionsPagerAdapter.incomeFragment.getView() != null){
-			sectionsPagerAdapter.incomeFragment.updateBalance(sectionsPagerAdapter.incomeFragment.getView());
+		if (sectionsPagerAdapter.incomeFragment.getView() != null) {
+			sectionsPagerAdapter.incomeFragment
+					.updateBalance(sectionsPagerAdapter.incomeFragment
+							.getView());
 		}
 	}
 
