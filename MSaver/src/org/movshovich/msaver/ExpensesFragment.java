@@ -50,7 +50,6 @@ public class ExpensesFragment extends Fragment {
 		addListeners(view);
 		updateBalance(view);
 		showList(view);
-		//TODO: choose  date
 		TextView dateView = (TextView) view.findViewById(R.id.expenseDate);		
 		SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy");		
 		dateView.setText(sdf.format(new Date()));
@@ -94,8 +93,8 @@ public class ExpensesFragment extends Fragment {
 				MainActivity.databaseHelper.getCategoryDao().refresh(p.getCategory());
 			}
 		} catch (SQLException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			Log.w("MSaver", e1);
+			return;
 		}
 		Button addButton = (Button)  view.findViewById(R.id.expenseAdd);
 		if (addButton != null) {
@@ -346,8 +345,8 @@ public class ExpensesFragment extends Fragment {
 			
 			sum = qRes.getFirstResult()[0];
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.w("MSaver", e);
+			return;
 		}
 		if (sum != null) {
 			TextView sumview = (TextView) view

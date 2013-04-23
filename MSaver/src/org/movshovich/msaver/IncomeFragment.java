@@ -59,8 +59,8 @@ public class IncomeFragment extends Fragment {
 				catDao.create(cat);
 			}
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.w("MSaver", e);
+			return null;
 		}
 		return view;
 	}
@@ -274,13 +274,10 @@ public class IncomeFragment extends Fragment {
 			GenericRawResults<String[]> qRes = tDao.queryRaw(qb.prepareStatementString());
 			sum = qRes.getFirstResult()[0];
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Log.w("MSaver", e);
+			return;
 		}
 		if (sum != null) {
-			Log.w("MSaver", "Sum is '" + sum + "'");
-			// TODO: Income update only after pressing button Add in expense -
-			// income window
 			TextView sumview = (TextView) view.findViewById(R.id.incomeBalance);
 			sum = addingDotToString(sum);
 			sumview.setText(sum);
