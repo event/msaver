@@ -350,7 +350,6 @@ public class ExpensesFragment extends Fragment {
 			e.printStackTrace();
 		}
 		if (sum != null) {
-			Log.w("MSaver", "Sum is '" + sum + "'");
 			TextView sumview = (TextView) view
 					.findViewById(R.id.expenseBalance);
 			sum = addingDotToString(sum);

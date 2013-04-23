@@ -2,6 +2,7 @@ package org.movshovich.msaver;
 
 import java.util.Date;
 
+import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
@@ -11,7 +12,7 @@ public class Transaction {
 	@DatabaseField(generatedId = true)
 	private int id;
 	
-	@DatabaseField
+	@DatabaseField(dataType = DataType.DATE_LONG)
 	private Date date;
 	
 	@DatabaseField(canBeNull=false, foreign = true)

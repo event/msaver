@@ -46,6 +46,10 @@ public class DateSelector extends TextView {
 		this.date = date;
 		setText(FORMAT.format(date));
 	}
+	
+	public Date getDate() {
+		return date;
+	}
 
 	protected void showDateSelectorDialog(View v) {
 		Calendar cal = Calendar.getInstance();
