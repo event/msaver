@@ -1,24 +1,19 @@
 package org.movshovich.msaver;
 
-import org.movshovich.msaver.R;
-
-import com.j256.ormlite.android.apptools.OpenHelperManager;
-
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
+
+import com.j256.ormlite.android.apptools.OpenHelperManager;
 
 public class MainActivity extends FragmentActivity implements
 		ActionBar.TabListener {
@@ -103,9 +98,14 @@ public class MainActivity extends FragmentActivity implements
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		if (item.getItemId() == R.id.menu_settings) {
+		int itemId = item.getItemId();
+		if (itemId == R.id.menu_settings) {
 			startActivity(item.getIntent());
 			return true;
+		} else if (itemId == R.id.do_sync) {
+			SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+			String ipAddr = pref.getString(MSaverPreferenceActivity.KEY_PREF_SERVER_ADDR, null);
+			new SyncMacher(ipAddr, getApplicationContext()).doSync();
 		}
 		return false;
 	}

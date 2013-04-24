@@ -6,5 +6,12 @@
         android:showAsAction="never"
         android:title="@string/menu_settings"
         />
-
+    
+    <item
+        android:id="@+id/do_sync"
+        android:orderInCategory="200"
+        android:showAsAction="never"
+        android:title="@string/sync"
+        />
+    
 </menu>

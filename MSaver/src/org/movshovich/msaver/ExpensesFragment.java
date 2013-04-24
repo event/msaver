@@ -8,8 +8,6 @@ import java.util.Date;
 import java.util.List;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.ListActivity;
 import android.content.DialogInterface;
 import android.database.Cursor;
 import android.graphics.Color;
