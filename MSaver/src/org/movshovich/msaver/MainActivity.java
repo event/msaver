@@ -103,9 +103,7 @@ public class MainActivity extends FragmentActivity implements
 			startActivity(item.getIntent());
 			return true;
 		} else if (itemId == R.id.do_sync) {
-			SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
-			String ipAddr = pref.getString(MSaverPreferenceActivity.KEY_PREF_SERVER_ADDR, null);
-			new SyncMacher(ipAddr, getApplicationContext()).execute();
+			new SyncMacher(getApplicationContext()).execute();
 		}
 		return false;
 	}

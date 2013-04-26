@@ -3,5 +3,12 @@
     <EditTextPreference 
         android:title="@string/server_addr"
         android:key="server_addr"/>
-
+    <EditTextPreference 
+        android:title="@string/username"
+        android:key="username"/>
+    <EditTextPreference
+        android:inputType="textPassword"
+        android:title="@string/password"
+        android:key="password"/>
+    
 </PreferenceScreen>

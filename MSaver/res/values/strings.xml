@@ -26,5 +26,7 @@
     <string name="fromDate">From Date</string>
     <string name="server_addr">Server IP Address</string>
     <string name="sync">Sync</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
 
 </resources>
