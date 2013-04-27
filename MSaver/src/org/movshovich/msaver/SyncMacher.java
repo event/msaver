@@ -47,9 +47,11 @@ public class SyncMacher extends AsyncTask<Void, Void, Long> {
 
 	private Context context;
 	private SharedPreferences pref;
+	private ExpensesFragment expensesFragment;
 
-	public SyncMacher(Context context) {
+	public SyncMacher(Context context, ExpensesFragment expensesFragment) {
 		this.context = context;
+		this.expensesFragment = expensesFragment;
 		pref = PreferenceManager.getDefaultSharedPreferences(context);
 	}
 
@@ -248,7 +250,12 @@ public class SyncMacher extends AsyncTask<Void, Void, Long> {
 		Dao<Product, Integer> prodDao = MainActivity.databaseHelper
 				.getProductDao();
 		int length = shopList.length();
-		List<Product> list = new ArrayList<Product>(length);
+		if (length == 0) {
+			return;
+		}
+		
+		Dao<ShoppingItem, Integer> shDao = MainActivity.databaseHelper.getShoppingDao();
+		shDao.deleteBuilder().delete();
 		for (int i = 0; i < length; i += 1) {
 			int itemId = shopList.getInt(i);
 			Product p;
@@ -258,12 +265,15 @@ public class SyncMacher extends AsyncTask<Void, Void, Long> {
 				p = newProds.get(itemId);
 			}
 			if (p == null) {
-				Log.w("MSaver", "Recieved shopping list with unknown porduct id " + itemId);
+				Log.w("MSaver", "Recieved shopping list item with unknown porduct id " + itemId);
 			} else {
-				list.add(p);
+				ShoppingItem shItem = new ShoppingItem();
+				shItem.setProduct(p);
+				shItem.setChecked(false);
+				shDao.create(shItem);
 			}
 		}
-		
+		expensesFragment.updateShoppingList();
 	}
 
 	private SparseArray<Category> processCategories(JSONArray cats)

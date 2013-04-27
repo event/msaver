@@ -103,7 +103,7 @@ public class MainActivity extends FragmentActivity implements
 			startActivity(item.getIntent());
 			return true;
 		} else if (itemId == R.id.do_sync) {
-			new SyncMacher(getApplicationContext()).execute();
+			new SyncMacher(getApplicationContext(), sectionsPagerAdapter.expensesFragment).execute();
 		}
 		return false;
 	}

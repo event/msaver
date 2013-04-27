@@ -382,5 +382,10 @@ public class ExpensesFragment extends Fragment {
 						.append('.').append(num.substring(lenNum - 2)).toString();
 		}
 	}
+
+	public void updateShoppingList() {
+		// TODO Auto-generated method stub
+		
+	}
 	
 }
