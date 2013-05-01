@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.List;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -27,6 +28,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FilterQueryProvider;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -38,6 +40,7 @@ import com.j256.ormlite.dao.CloseableIterator;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.GenericRawResults;
 import com.j256.ormlite.stmt.QueryBuilder;
+import com.j256.ormlite.stmt.Where;
 
 public class ExpensesFragment extends Fragment {
 
@@ -248,7 +251,7 @@ public class ExpensesFragment extends Fragment {
 				public void onItemSelected(AdapterView<?> parent, View viewSelected,
 						int position, long id) {
 					popup.findViewById(R.id.categoryEditText).setVisibility(
-							position == 0 ? View.VISIBLE : View.INVISIBLE);
+							position == 0 ? View.VISIBLE : View.GONE);
 				}
 
 				@Override
@@ -384,8 +387,31 @@ public class ExpensesFragment extends Fragment {
 	}
 
 	public void updateShoppingList() {
-		// TODO Auto-generated method stub
+		List<Product> items;
+		try {
+			QueryBuilder<ShoppingItem, Integer> shQB = MainActivity.databaseHelper.getShoppingDao().queryBuilder();
+			shQB.selectColumns("product_id");
+			Where<Product, Integer> prodQuery = MainActivity.databaseHelper.getProductDao().queryBuilder()
+					.where().in("id", shQB);
+			items = prodQuery.query();
+		} catch (SQLException e) {
+			Log.w("MSaver", e); 
+			return;
+		}
+		if (items.isEmpty()) {
+			return;
+		}
 		
+		getView().findViewById(R.id.last_buys).setVisibility(View.GONE);
+		LinearLayout shList = (LinearLayout) getView().findViewById(R.id.shopping_list);
+		shList.removeAllViews();
+		Context context = getView().getContext();
+		for (Product item : items) {
+			TextView textView = new TextView(context);
+			textView.setText(item.getName());
+			shList.addView(textView);
+		}
+		shList.setVisibility(View.VISIBLE);
 	}
 	
 }

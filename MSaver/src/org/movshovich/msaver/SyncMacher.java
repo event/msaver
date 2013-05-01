@@ -48,6 +48,7 @@ public class SyncMacher extends AsyncTask<Void, Void, Long> {
 	private Context context;
 	private SharedPreferences pref;
 	private ExpensesFragment expensesFragment;
+	private String errorText;
 
 	public SyncMacher(Context context, ExpensesFragment expensesFragment) {
 		this.context = context;
@@ -74,7 +75,7 @@ public class SyncMacher extends AsyncTask<Void, Void, Long> {
 			HttpResponse resp = http.execute(post);
 			processResponse(resp);
 		} catch (Exception e) {
-			Toast.makeText(context, "Sync failed", Toast.LENGTH_SHORT).show();
+			errorText = "Sync failed";
 			Log.e("MSaver", "Http operations failed", e);
 			return false;
 		}
@@ -86,8 +87,7 @@ public class SyncMacher extends AsyncTask<Void, Void, Long> {
 
 	private boolean isEmpty(String value, String hrName) {
 		if (value == null || value.isEmpty()) {
-			Toast.makeText(context, "Please fill in " + hrName,
-					Toast.LENGTH_SHORT).show();
+			errorText = "Please fill in " + hrName;
 			return true;
 		}
 		return false;
@@ -100,7 +100,8 @@ public class SyncMacher extends AsyncTask<Void, Void, Long> {
 		if (isEmpty(username, "username") || isEmpty(password, "password")) {
 			return null;
 		}
-		long lastPushTs = pref.getLong(KEY_PREF_LAST_PUSH, 0);
+//		long lastPushTs = pref.getLong(KEY_PREF_LAST_PUSH, 0);
+		long lastPushTs = 0L;
 		Date lastPush = new Date(lastPushTs);
 		json.put("username", username);
 		json.put("password", password);
@@ -113,14 +114,13 @@ public class SyncMacher extends AsyncTask<Void, Void, Long> {
 			prods = getProducts(txs);
 			cats = getCategories(prods);
 		} catch (SQLException e) {
-			Toast.makeText(context, "Sync failed", Toast.LENGTH_SHORT).show();
+			errorText = "Sync failed";
 			Log.e("MSaver", "Database queries failed", e);
 			return null;
 		}
 		json.put("transactions", transactions2JsonArray(txs));
 		json.put("products", products2JsonArray(prods));
 		json.put("categories", categories2JsonArray(cats));
-		Log.w("MSaver", json.toString(3));
 		return json;
 	}
 
@@ -159,8 +159,8 @@ public class SyncMacher extends AsyncTask<Void, Void, Long> {
 		res.put("price", t.getPrice());
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(t.getDate());
-		res.put("date", cal.getTimeInMillis());
-		res.put("prodId", t.getProduct().getId());
+		res.put("date", cal.getTimeInMillis() / 1000);
+		res.put("productId", t.getProduct().getId());
 		return res;
 	}
 
@@ -227,15 +227,17 @@ public class SyncMacher extends AsyncTask<Void, Void, Long> {
 			sb.append(line);
 			line = reader.readLine();
 		}
+		
+		Log.w("MSaver", sb.toString());
 		JSONObject json = new JSONObject(sb.toString());
 		processResponse(json);
 	}
 
 	private void processResponse(JSONObject json) throws JSONException,
 			SQLException {
-		String errorStr = json.getString("error");
-		if (errorStr != null) {
-			Toast.makeText(context, "Sync failed: " + errorStr, Toast.LENGTH_SHORT).show();
+		String errorStr = json.optString("error");
+		if (!errorStr.isEmpty()) {
+			this.errorText = "Sync failed: " + errorStr;
 			return;
 		}
 		JSONArray prods = json.getJSONArray("products");
@@ -243,10 +245,10 @@ public class SyncMacher extends AsyncTask<Void, Void, Long> {
 		JSONArray shopList = json.getJSONArray("shoppingList");
 		SparseArray<Category> newCats = processCategories(cats);
 		SparseArray<Product> newProds = processProducts(prods, newCats);
-		showShoppingList(shopList, newProds);
+		saveShoppingList(shopList, newProds);
 	}
 
-	private void showShoppingList(JSONArray shopList, SparseArray<Product> newProds) throws JSONException, SQLException {
+	private void saveShoppingList(JSONArray shopList, SparseArray<Product> newProds) throws JSONException, SQLException {
 		Dao<Product, Integer> prodDao = MainActivity.databaseHelper
 				.getProductDao();
 		int length = shopList.length();
@@ -273,7 +275,6 @@ public class SyncMacher extends AsyncTask<Void, Void, Long> {
 				shDao.create(shItem);
 			}
 		}
-		expensesFragment.updateShoppingList();
 	}
 
 	private SparseArray<Category> processCategories(JSONArray cats)
@@ -350,6 +351,11 @@ public class SyncMacher extends AsyncTask<Void, Void, Long> {
 	@Override
 	protected void onPostExecute(Long result) {
 		super.onPostExecute(result);
-		Toast.makeText(context, "Sync success!", Toast.LENGTH_SHORT).show();
+		if (result == 1) {
+			expensesFragment.updateShoppingList();
+			Toast.makeText(context, "Sync success!", Toast.LENGTH_SHORT).show();
+		} else {
+			Toast.makeText(context, errorText, Toast.LENGTH_SHORT).show();
+		}			
 	}
 }
