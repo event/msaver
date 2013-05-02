@@ -58,6 +58,10 @@ public class ExpensesFragment extends Fragment {
 	}
 
 	private void showList(View view) {
+		boolean quit = updateShoppingList(view);
+		if (quit) {
+			return;
+		}
 		QueryBuilder<Transaction, Integer> qb = MainActivity.databaseHelper
 				.getTransactionDao().queryBuilder();
 		List<Transaction> expenses;
@@ -386,7 +390,7 @@ public class ExpensesFragment extends Fragment {
 		}
 	}
 
-	public void updateShoppingList() {
+	public boolean updateShoppingList(View view) {
 		List<Product> items;
 		try {
 			QueryBuilder<ShoppingItem, Integer> shQB = MainActivity.databaseHelper.getShoppingDao().queryBuilder();
@@ -396,22 +400,32 @@ public class ExpensesFragment extends Fragment {
 			items = prodQuery.query();
 		} catch (SQLException e) {
 			Log.w("MSaver", e); 
-			return;
+			return false;
 		}
 		if (items.isEmpty()) {
-			return;
+			return false;
 		}
 		
-		getView().findViewById(R.id.last_buys).setVisibility(View.GONE);
-		LinearLayout shList = (LinearLayout) getView().findViewById(R.id.shopping_list);
+		if (view == null) {
+			view = getView();
+		}
+		View list = view.findViewById(R.id.last_buys);
+		list.setVisibility(View.GONE);
+		LinearLayout shList = (LinearLayout) view.findViewById(R.id.shopping_list);
 		shList.removeAllViews();
-		Context context = getView().getContext();
+		Context context = view.getContext();
 		for (Product item : items) {
 			TextView textView = new TextView(context);
 			textView.setText(item.getName());
 			shList.addView(textView);
 		}
+		for (String test : new String[]{"first", "very very veyr very very veyr ong transaction"}) {
+			TextView textView = new TextView(context);
+			textView.setText(test);
+			shList.addView(textView);
+		}
 		shList.setVisibility(View.VISIBLE);
+		return true;
 	}
 	
 }
