@@ -17,10 +17,13 @@ import android.support.v4.app.Fragment;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v4.widget.SimpleCursorAdapter.CursorToStringConverter;
 import android.text.Editable;
+import android.text.TextUtils.TruncateAt;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -29,6 +32,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FilterQueryProvider;
 import android.widget.LinearLayout;
+import android.widget.Space;
+import android.widget.LinearLayout.LayoutParams;
 import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -40,9 +45,10 @@ import com.j256.ormlite.dao.CloseableIterator;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.GenericRawResults;
 import com.j256.ormlite.stmt.QueryBuilder;
+import com.j256.ormlite.stmt.UpdateBuilder;
 import com.j256.ormlite.stmt.Where;
 
-public class ExpensesFragment extends Fragment {
+public class ExpensesFragment extends Fragment implements OnClickListener, OnLongClickListener {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -62,6 +68,8 @@ public class ExpensesFragment extends Fragment {
 		if (quit) {
 			return;
 		}
+		TextView headText = (TextView) view.findViewById(R.id.last_buys_bead);
+		headText.setText(R.string.last_buys);
 		QueryBuilder<Transaction, Integer> qb = MainActivity.databaseHelper
 				.getTransactionDao().queryBuilder();
 		List<Transaction> expenses;
@@ -393,10 +401,8 @@ public class ExpensesFragment extends Fragment {
 	public boolean updateShoppingList(View view) {
 		List<Product> items;
 		try {
-			QueryBuilder<ShoppingItem, Integer> shQB = MainActivity.databaseHelper.getShoppingDao().queryBuilder();
-			shQB.selectColumns("product_id");
 			Where<Product, Integer> prodQuery = MainActivity.databaseHelper.getProductDao().queryBuilder()
-					.where().in("id", shQB);
+					.where().eq("inShoppingList", true);
 			items = prodQuery.query();
 		} catch (SQLException e) {
 			Log.w("MSaver", e); 
@@ -409,23 +415,96 @@ public class ExpensesFragment extends Fragment {
 		if (view == null) {
 			view = getView();
 		}
+		TextView headText = (TextView) view.findViewById(R.id.last_buys_bead);
+		headText.setText(R.string.shop_list);
+
 		View list = view.findViewById(R.id.last_buys);
 		list.setVisibility(View.GONE);
 		LinearLayout shList = (LinearLayout) view.findViewById(R.id.shopping_list);
 		shList.removeAllViews();
 		Context context = view.getContext();
+		ViewGroup.LayoutParams spaceParams = new ViewGroup.LayoutParams(1, 5);
 		for (Product item : items) {
-			TextView textView = new TextView(context);
-			textView.setText(item.getName());
+			TextView textView = createShoppingListItem(context, item);
 			shList.addView(textView);
+			Space space = new Space(context);
+			space.setLayoutParams(spaceParams);
+			shList.addView(space);
 		}
-		for (String test : new String[]{"first", "very very veyr very very veyr ong transaction"}) {
-			TextView textView = new TextView(context);
-			textView.setText(test);
-			shList.addView(textView);
-		}
+//		for (String test : new String[]{"first", "very very veyr very very veyrvery very veyr very very" +
+//				" veyr ong transaction", "more", "even more", "asdf", "ky96_few", "fsrt6"}) {
+//			TextView textView = createShoppingListItem(context, test);
+//			shList.addView(textView);
+//			Space space = new Space(context);
+//			space.setLayoutParams(spaceParams);
+//			shList.addView(space);
+//		}
 		shList.setVisibility(View.VISIBLE);
 		return true;
 	}
+
+	private TextView createShoppingListItem(Context context, Product p) {
+		TextView textView = new TextView(context);
+		textView.setSingleLine();
+		textView.setEllipsize(TruncateAt.END);
+		textView.setTextSize(18f);
+		textView.setText(p.getName());
+		textView.setId(p.getId());
+		textView.setBackgroundResource(R.drawable.sh_list_item);
+		textView.setPadding(40, 20, 0, 20);
+		textView.setOnClickListener(this);
+		textView.setOnLongClickListener(this);
+		textView.setClickable(true);
+		return textView;
+	}
+
+	@Override
+	public void onClick(View v) {
+		TextView item = (TextView) v;
+		EditText prodText = (EditText) getView().findViewById(R.id.expenseProductEnter);
+		prodText.setText(item.getText());
+		getView().findViewById(R.id.expensePriceEnter).requestFocus();
+		LinearLayout shList = (LinearLayout) getView().findViewById(R.id.shopping_list);
+		shList.removeView(item);
+		UpdateBuilder<Product, Integer> ub = MainActivity.databaseHelper.getProductDao().updateBuilder();
+		try {
+			ub.updateColumnValue("inShoppingList", false);
+			ub.where().idEq(item.getId());
+			ub.update();
+		} catch (SQLException e) {
+			Log.w("MSaver", e);
+			return;
+		}
+	}
+
+	@Override
+	public boolean onLongClick(View v) {
+		final TextView item = (TextView) v;
+		AlertDialog.Builder builder = new AlertDialog.Builder(getView().getContext());
+		builder.setMessage("Delete item?").setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				LinearLayout shList = (LinearLayout) getView().findViewById(R.id.shopping_list);
+				shList.removeView(item);
+				UpdateBuilder<Product, Integer> ub = MainActivity.databaseHelper.getProductDao().updateBuilder();
+				try {
+					ub.updateColumnValue("inShoppingList", false);
+					ub.where().idEq(item.getId());
+					ub.update();
+				} catch (SQLException e) {
+					Log.w("MSaver", e);
+					return;
+				}
+			}
+		}).setNegativeButton("No", new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				// nothing to do here
+			}
+		}).show();
+		return false;
+	}
+
 	
 }

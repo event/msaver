@@ -13,11 +13,11 @@
     <string name="product">product</string>
     <string name="date">Date</string>
     <string name="expence_date">Expense date</string>
-    <string name="last_buys">Last buys</string>
+    <string name="last_buys">Last Buys</string>
     <string name="balance">Balance</string>
     <string name="income_date">Income date</string>
     <string name="income">income</string>
-    <string name="last_incomes">Last incomes</string>
+    <string name="last_incomes">Last Incomes</string>
     <string name="amount">amount</string>
     <string name="categories">Categories</string>
     <string name="done">Done</string>
@@ -28,5 +28,6 @@
     <string name="sync">Sync</string>
     <string name="username">Username</string>
     <string name="password">Password</string>
-
+    <string name="shop_list">Shopping List</string>
+    
 </resources>

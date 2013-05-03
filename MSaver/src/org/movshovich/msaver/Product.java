@@ -9,8 +9,11 @@ public class Product {
 	private int id;
 	@DatabaseField
 	private String name;
+	@DatabaseField
+	private boolean inShoppingList;
 	@DatabaseField(canBeNull=false, foreign = true)
 	private Category category;
+	
 	
 	public Product() {
 		super();
@@ -32,6 +35,12 @@ public class Product {
 	}
 	public void setCategory(Category category) {
 		this.category = category;
+	}
+	public boolean isInShoppingList() {
+		return inShoppingList;
+	}
+	public void setInShoppingList(boolean inShoppingList) {
+		this.inShoppingList = inShoppingList;
 	}
 
 }

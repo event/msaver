@@ -23,8 +23,6 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
 	private Dao<Category, Integer> categoryDao;
 
-	private Dao<ShoppingItem, Integer> shoppingDao;
-
 	public DatabaseHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
 	}
@@ -35,7 +33,6 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			TableUtils.createTable(connectionSource, Product.class);
 			TableUtils.createTable(connectionSource, Transaction.class);
 			TableUtils.createTable(connectionSource, Category.class);
-			TableUtils.createTable(connectionSource, ShoppingItem.class);
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}
@@ -85,17 +82,6 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 			}
 		}
 		return categoryDao;
-	}
-
-	public Dao<ShoppingItem,Integer> getShoppingDao() {
-		if (shoppingDao == null) {
-			try {
-				shoppingDao = getDao(ShoppingItem.class);
-			} catch (SQLException e) {
-				throw new RuntimeException(e);
-			}
-		}
-		return shoppingDao;
 	}
 
 }

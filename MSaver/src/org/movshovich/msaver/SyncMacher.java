@@ -256,25 +256,23 @@ public class SyncMacher extends AsyncTask<Void, Void, Long> {
 			return;
 		}
 		
-		Dao<ShoppingItem, Integer> shDao = MainActivity.databaseHelper.getShoppingDao();
-		shDao.deleteBuilder().delete();
+		UpdateBuilder<Product, Integer> ub = prodDao.updateBuilder();
+		ub.updateColumnValue("inShoppingList", false);
+		ub.update();
+		List<Integer> ids = new ArrayList<Integer>(length);
 		for (int i = 0; i < length; i += 1) {
 			int itemId = shopList.getInt(i);
 			Product p;
 			if (itemId > 0) {
-				p = prodDao.queryForId(itemId);
+				ids.add(itemId);
 			} else {
-				p = newProds.get(itemId);
-			}
-			if (p == null) {
-				Log.w("MSaver", "Recieved shopping list item with unknown porduct id " + itemId);
-			} else {
-				ShoppingItem shItem = new ShoppingItem();
-				shItem.setProduct(p);
-				shItem.setChecked(false);
-				shDao.create(shItem);
+				ids.add(newProds.get(itemId).getId());
 			}
 		}
+		ub = prodDao.updateBuilder();
+		ub.updateColumnValue("inShoppingList", true);
+		ub.where().in("id", ids);
+		ub.update();
 	}
 
 	private SparseArray<Category> processCategories(JSONArray cats)

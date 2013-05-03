@@ -62,7 +62,7 @@
         android:text="@string/add" />
 
     <TextView
-        android:id="@+id/lastBuysHead"
+        android:id="@+id/last_buys_bead"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="20dp"
