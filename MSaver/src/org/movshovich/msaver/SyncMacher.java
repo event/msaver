@@ -198,12 +198,9 @@ public class SyncMacher extends AsyncTask<Void, Void, Long> {
 	private SparseArray<Product> getProducts(Collection<Transaction> txs)
 			throws SQLException {
 		SparseArray<Product> res = new SparseArray<Product>();
-		Dao<Product, Integer> prodDao = MainActivity.databaseHelper
-				.getProductDao();
-		for (Transaction tx : txs) {
-			Product product = tx.getProduct();
+		for (Product product : MainActivity.databaseHelper
+				.getProductDao().queryForAll()) {
 			if (res.get(product.getId()) == null) {
-				prodDao.refresh(product);
 				res.put(product.getId(), product);
 			}
 		}
