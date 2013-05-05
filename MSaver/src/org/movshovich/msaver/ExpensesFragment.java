@@ -475,13 +475,17 @@ public class ExpensesFragment extends Fragment implements OnClickListener, OnLon
 			Log.w("MSaver", e);
 			return;
 		}
+		if (shList.getChildCount() == 0) {
+			showList(getView());
+		}
 	}
 
 	@Override
 	public boolean onLongClick(View v) {
 		final TextView item = (TextView) v;
 		AlertDialog.Builder builder = new AlertDialog.Builder(getView().getContext());
-		builder.setMessage("Delete item?").setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+		builder.setMessage("Delete '" + item.getText() + "' from list?").setPositiveButton("Yes"
+				, new DialogInterface.OnClickListener() {
 			
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
@@ -495,6 +499,9 @@ public class ExpensesFragment extends Fragment implements OnClickListener, OnLon
 				} catch (SQLException e) {
 					Log.w("MSaver", e);
 					return;
+				}
+				if (shList.getChildCount() == 0) {
+					showList(getView());
 				}
 			}
 		}).setNegativeButton("No", new DialogInterface.OnClickListener() {
