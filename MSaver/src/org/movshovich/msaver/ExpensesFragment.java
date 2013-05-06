@@ -5,7 +5,12 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import org.xmlrpc.android.XMLRPCClient;
+import org.xmlrpc.android.XMLRPCException;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -531,7 +536,12 @@ public class ExpensesFragment extends Fragment implements OnClickListener, OnLon
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
 		BarcodeResult barcodeResult = BarcodeScanIntentHelperV30.parseActivityResult(requestCode, resultCode, intent);
-		Toast.makeText(getView().getContext(), barcodeResult.getContents(), Toast.LENGTH_LONG).show(); 
+		new BarcodeResolver(getView().getContext(), this).execute(barcodeResult.getContents());
+	}
+
+	public void setProdText(String text) {
+		EditText prodEnter = (EditText) getView().findViewById(R.id.expenseProductEnter);
+		prodEnter.setText(text);
 	}
 
 	

@@ -31,6 +31,8 @@ public class MainActivity extends FragmentActivity implements
 	public static DatabaseHelper databaseHelper;
 
 	public static final int INCOME_CAT_ID = 1;
+	
+	public static final String UPCDB_KEY = "7528c29113d4b05d896da9cb493ed8bca29434ff";
 	/**
 	 * The {@link ViewPager} that will host the section contents.
 	 */
