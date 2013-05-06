@@ -544,6 +544,12 @@ public class ExpensesFragment extends Fragment implements OnClickListener, OnLon
 		prodEnter.setText(text);
 	}
 
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		updateBalance(getView());
+	}
 	
 
 
