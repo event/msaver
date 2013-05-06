@@ -29,5 +29,6 @@
     <string name="username">Username</string>
     <string name="password">Password</string>
     <string name="shop_list">Shopping List</string>
+    <string name="scan">Scan</string>
     
 </resources>

@@ -10,6 +10,7 @@ import java.util.List;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -118,6 +119,20 @@ public class ExpensesFragment extends Fragment implements OnClickListener, OnLon
 				}
 			});
 		}
+		Button scanButton = (Button)  view.findViewById(R.id.expenseScan);
+		if (scanButton != null) {
+			final ExpensesFragment self = this;
+			scanButton.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					BarcodeScanIntentHelperV30 intent = new BarcodeScanIntentHelperV30(self);
+					AlertDialog scanDialog = intent.initiateScan();
+					if (scanDialog != null) {
+						scanDialog.show();
+					}
+				}
+			});
+		}
 		final EditText price = (EditText) view.findViewById(R.id.expensePriceEnter);
 		
 		price.addTextChangedListener(new TextWatcher() {
@@ -152,8 +167,6 @@ public class ExpensesFragment extends Fragment implements OnClickListener, OnLon
 		});
 		sca.setFilterQueryProvider(new FilterQueryProvider() {
 			public Cursor runQuery(CharSequence constraint) {
-				// Search for states whose names begin with the specified letters
-				// build your query
 				if (constraint == null) {
 					return null;
 				}
@@ -183,6 +196,8 @@ public class ExpensesFragment extends Fragment implements OnClickListener, OnLon
 
 	}
 
+	
+	
 	private void onAddClick(final View view) {
 		final EditText producttext = (EditText) view.findViewById(R.id.expenseProductEnter);
 		final EditText pricetext = (EditText) view.findViewById(R.id.expensePriceEnter);
@@ -513,5 +528,13 @@ public class ExpensesFragment extends Fragment implements OnClickListener, OnLon
 		return false;
 	}
 
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+		BarcodeResult barcodeResult = BarcodeScanIntentHelperV30.parseActivityResult(requestCode, resultCode, intent);
+		Toast.makeText(getView().getContext(), barcodeResult.getContents(), Toast.LENGTH_LONG).show(); 
+	}
+
 	
+
+
 }
