@@ -346,7 +346,7 @@ public class SyncMacher extends AsyncTask<Void, Void, Long> {
 	@Override
 	protected void onPostExecute(Long result) {
 		super.onPostExecute(result);
-		if (result == 1) {
+		if (errorText == null) {
 			expensesFragment.updateShoppingList(null);
 			Toast.makeText(context, "Sync success!", Toast.LENGTH_SHORT).show();
 		} else {

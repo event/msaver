@@ -1,10 +1,16 @@
 package org.movshovich.msaver;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.sql.SQLException;
 
-import org.xmlrpc.android.XMLRPCClient;
-import org.xmlrpc.android.XMLRPCException;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -20,29 +26,43 @@ public class BarcodeResolver extends AsyncTask<String, Void, String> {
 		this.context = context;
 		this.expensesFragment = expensesFragment;
 	}
-	
+
 	@Override
 	protected String doInBackground(String... params) {
 		String barcodeContent = params[0];
 		Log.w("MSaver", "barcode is " + barcodeContent);
-		XMLRPCClient client = new XMLRPCClient("http://www.upcdatabase.com/xmlrpc");
-		String text = null;
+		DefaultHttpClient http = new DefaultHttpClient();
+		HttpGet get = new HttpGet(
+				"http://eandata.com/feed.php?keycode=01710910518C093A&comp=no"
+						+ "&pending=yes&mode=json&find=" + barcodeContent);
+		get.setHeader("User-Agent", "Bond007");
 		try {
-			Map<String, String> xmlParams = new HashMap<String, String>();
-			xmlParams.put("rpc_key", MainActivity.UPCDB_KEY);
-			xmlParams.put("upc", barcodeContent);
-			HashMap result = (HashMap) client.call("lookup", xmlParams);
-			Log.w("MSaver", result.toString());
-			String status = result.get("status").toString();
-			if (status != "fail") {
-				text = result.get("description").toString();
-			}
-		} catch (NullPointerException nl) {
-			Log.w("MSaver", nl);
-		} catch (XMLRPCException e) {
-			Log.w("MSaver", e);
+			HttpResponse resp = http.execute(get);
+			return getProductName(resp);
+		} catch (Exception e) {
+			Log.e("MSaver", "Http operations failed", e);
+			return null;
 		}
-		return text;
+	}
+
+	private String getProductName(HttpResponse resp) throws IOException,
+			JSONException, SQLException {
+		InputStream content = resp.getEntity().getContent();
+		BufferedReader reader = new BufferedReader(new InputStreamReader(
+				content, "UTF-8"));
+		StringBuilder sb = new StringBuilder(128);
+		String line = reader.readLine();
+		while (line != null) {
+			sb.append(line);
+			line = reader.readLine();
+		}
+		String stuff = sb.toString();
+		Log.w("MSaver", stuff);
+		JSONObject json = new JSONObject(stuff);
+		if (json.getJSONObject("status").getInt("code") != 200) {
+			return null;
+		}
+		return json.getJSONObject("product").getString("product");
 	}
 
 	@Override
@@ -51,8 +71,9 @@ public class BarcodeResolver extends AsyncTask<String, Void, String> {
 		if (result != null) {
 			expensesFragment.setProdText(result);
 		} else {
-			Toast.makeText(context, "Barcode was not recognized", Toast.LENGTH_LONG).show();
-		}			
+			Toast.makeText(context, "Barcode was not recognized",
+					Toast.LENGTH_LONG).show();
+		}
 	}
-	
+
 }
